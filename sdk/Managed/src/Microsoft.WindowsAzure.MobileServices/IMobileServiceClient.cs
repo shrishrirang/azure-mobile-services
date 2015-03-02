@@ -23,10 +23,20 @@ namespace Microsoft.WindowsAzure.MobileServices
         string ApplicationKey { get; }
 
         /// <summary>
-        /// Gets the Uri to the Mobile Services application that is provided by
-        /// the call to MobileServiceClient(...).
+        /// Uri of the Microsoft Azure Mobile Service
         /// </summary>
-        Uri ApplicationUri { get; }
+        Uri MobileServiceUri { get; }
+        //ttodoshrirs - does mobile and user site uri need to be public? can they be internal? basically why do we need this interface?
+
+        /// <summary>
+        /// Uri of the user code website. This can point to a deployment on Azure or elsewhere
+        /// </summary>
+        Uri UserSiteUri { get; }
+
+        /// <summary>
+        /// Uri of the resource group's gateway
+        /// </summary>
+        Uri GatewayUri { get; }
 
         /// <summary>
         /// The current authenticated user provided after a successful call to

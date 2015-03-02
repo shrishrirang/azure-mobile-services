@@ -71,8 +71,8 @@ namespace Microsoft.WindowsAzure.MobileServices
             string queryString = MobileServiceUrlBuilder.GetQueryString(parameters, useTableAPIRules: false);
             string pathAndQuery = MobileServiceUrlBuilder.CombinePathAndQuery(path, queryString);
 
-            this.StartUri = new Uri(this.Client.ApplicationUri, pathAndQuery);
-            this.EndUri = new Uri(this.Client.ApplicationUri, MobileServiceAuthentication.LoginAsyncDoneUriFragment);
+            this.StartUri = new Uri(this.Client.GatewayUri, pathAndQuery);
+            this.EndUri = new Uri(this.Client.GatewayUri, MobileServiceAuthentication.LoginAsyncDoneUriFragment);
         }
 
         /// <summary>

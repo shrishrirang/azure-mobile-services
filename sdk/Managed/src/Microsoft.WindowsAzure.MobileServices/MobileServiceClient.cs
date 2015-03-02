@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.MobileServices.Sync;
@@ -43,10 +44,20 @@ namespace Microsoft.WindowsAzure.MobileServices
         internal string applicationInstallationId;
 
         /// <summary>
-        /// Gets the Uri to the Mobile Services application that is provided by
-        /// the call to MobileServiceClient(...).
+        /// Uri of the Microsoft Azure Mobile Service
         /// </summary>
-        public Uri ApplicationUri { get; private set; }
+        public Uri MobileServiceUri { get; private set; }
+        //ttodoshrirs - does mobile and user site uri need to be public? can they be internal?
+
+        /// <summary>
+        /// Uri of the user code website. This can point to a deployment on Azure or elsewhere
+        /// </summary>
+        public Uri UserSiteUri { get; private set; }
+
+        /// <summary>
+        /// Uri of the resource group's gateway
+        /// </summary>
+        public Uri GatewayUri { get; private set; }
 
         /// <summary>
         /// Gets the Mobile Services application's name that is provided by the
@@ -97,85 +108,47 @@ namespace Microsoft.WindowsAzure.MobileServices
 
         /// <summary>
         /// Gets the <see cref="MobileServiceHttpClient"/> associated with this client.
+        /// ttodoshrirs - highpri. Review all usages of this property. This will have to be split into mobile service/user site/gateway clients for V2
         /// </summary>
         internal MobileServiceHttpClient HttpClient { get; private set; }
 
-        /// <summary>
-        /// Initializes a new instance of the MobileServiceClient class.
-        /// </summary>
-        /// <param name="applicationUrl">
-        /// The URI for the Microsoft Azure Mobile Service.
-        /// </param>
-        [SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "0#", Justification = "Enables easier copy/paste getting started workflow")]
-        public MobileServiceClient(string applicationUrl)
-            : this(new Uri(applicationUrl))
-        {
-        }
+        #region Constructor(s)
 
         /// <summary>
         /// Initializes a new instance of the MobileServiceClient class.
         /// </summary>
-        /// <param name="applicationUri">
-        /// The URI for the Microsoft Azure Mobile Service.
-        /// </param>
-        public MobileServiceClient(Uri applicationUri)
-            : this(applicationUri, null)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the MobileServiceClient class.
-        /// </summary>
-        /// <param name="applicationUrl">
-        /// The URI for the Microsoft Azure Mobile Service.
+        /// <param name="mobileServiceUri">
+        /// The URI for the Microsoft Azure Mobile Service. See <see cref="MobileServiceUri"/> for more details.
         /// </param>
         /// <param name="applicationKey">
         /// The application key for the Microsoft Azure Mobile Service.
         /// </param>
-        [SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "0#", Justification = "Enables easier copy/paste getting started workflow")]
-        public MobileServiceClient(string applicationUrl, string applicationKey)
-            : this(new Uri(applicationUrl), applicationKey)
+        public MobileServiceClient(Uri mobileServiceUri, string userSiteName, string applicationKey = null)
+            : this(mobileServiceUri, userSiteName, applicationKey, null)
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the MobileServiceClient class.
-        /// </summary>
-        /// <param name="applicationUri">
-        /// The URI for the Microsoft Azure Mobile Service.
-        /// </param>
-        /// <param name="applicationKey">
-        /// The application key for the Microsoft Azure Mobile Service.
-        /// </param> 
-        public MobileServiceClient(Uri applicationUri, string applicationKey)
-            : this(applicationUri, applicationKey, null)
+        public MobileServiceClient(Uri mobileServiceUri, Uri userSiteUri, string applicationKey = null)
+            : this(mobileServiceUri, userSiteUri, applicationKey, null)
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the MobileServiceClient class.
-        /// </summary>
-        /// <param name="applicationUrl">
-        /// The URI for the Microsoft Azure Mobile Service.
-        /// </param>
-        /// <param name="applicationKey">
-        /// The application key for the Microsoft Azure Mobile Service.
-        /// </param>
-        /// <param name="handlers">
-        /// Chain of <see cref="HttpMessageHandler" /> instances. 
-        /// All but the last should be <see cref="DelegatingHandler"/>s. 
-        /// </param>
-        [SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "0#", Justification = "Enables easier copy/paste getting started workflow")]
-        public MobileServiceClient(string applicationUrl, string applicationKey, params HttpMessageHandler[] handlers)
-            : this(new Uri(applicationUrl), applicationKey, handlers)
+        public MobileServiceClient(Uri mobileServiceUri, string userSiteName, string applicationKey, params HttpMessageHandler[] handlers)
+            : this(mobileServiceUri, GetUserSiteUri(mobileServiceUri, userSiteName), applicationKey, handlers)
         {
         }
 
+
+        //ttodoshrirs - assumed that user site name is implicit. no need of taking it as a param.
+        //ttodoshrirs - review all summaries
         /// <summary>
         /// Initializes a new instance of the MobileServiceClient class.
         /// </summary>
-        /// <param name="applicationUri">
-        /// The URI for the Microsoft Azure Mobile Service.
+        /// <param name="mobileServiceUri">
+        /// The URI of the Microsoft Azure Mobile Service. See <see cref="MobileServiceUri"/> for more details
+        /// </param>
+        /// <param name="userSiteUri">
+        /// The URI of the user code website. See <see cref="UserSiteUri"/> for more details
         /// </param>
         /// <param name="applicationKey">
         /// The application key for the Microsoft Azure Mobile Service.
@@ -184,29 +157,71 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// Chain of <see cref="HttpMessageHandler" /> instances. 
         /// All but the last should be <see cref="DelegatingHandler"/>s. 
         /// </param>
-        public MobileServiceClient(Uri applicationUri, string applicationKey, params HttpMessageHandler[] handlers)
+        public MobileServiceClient(Uri mobileServiceUri, Uri userSiteUri, string applicationKey, params HttpMessageHandler[] handlers)
         {
-            if (applicationUri == null)
+            if (mobileServiceUri == null)
             {
-                throw new ArgumentNullException("applicationUri");
+                throw new ArgumentNullException("mobileServiceUri");
             }
 
-            this.ApplicationUri = applicationUri;
+            if (userSiteUri == null)
+            {
+                throw new ArgumentNullException("userSiteUri");
+            }
+
+            // Trailing slashes in URIs are important. Fix them right here before we pass them on further.
+            this.MobileServiceUri = MobileServiceUrlBuilder.AppendSlashIfAbsoluteUri(mobileServiceUri);
+            this.UserSiteUri = MobileServiceUrlBuilder.AppendSlashIfAbsoluteUri(userSiteUri);
+            this.GatewayUri = GetGatewayUri(mobileServiceUri);
+
             this.ApplicationKey = applicationKey;
             this.applicationInstallationId = GetApplicationInstallationId();
 
             handlers = handlers ?? EmptyHttpMessageHandlers;
-            this.HttpClient = new MobileServiceHttpClient(handlers, this.ApplicationUri, this.applicationInstallationId, this.ApplicationKey);
+            this.HttpClient = new MobileServiceHttpClient(handlers, this.UserSiteUri, this.applicationInstallationId, this.ApplicationKey);
             this.Serializer = new MobileServiceSerializer();
             this.SyncContext = new MobileServiceSyncContext(this);
-        }
+        }//ttodoshrirs - move all path manipulation functions to MobileServiceUrlBuilder.cs
 
         /// <summary>
         ///  This is for unit testing only
         /// </summary>
         protected MobileServiceClient()
         {
+            //ttodoshrirs - note, user site and mobile can both be on azure, but behind different gateways? Is this allowed? how is app key used?
+        }
 
+        #endregion
+
+        private const string SchemeDelimiter = "://";
+        private const string ComponentDelimiter = "/";
+
+        private static Uri GetUserSiteUri(Uri mobileServiceUri, string userSiteName)
+        {
+            if (string.IsNullOrEmpty(userSiteName))
+            {
+                throw new ArgumentException("Expected a non null, non empty string", "userSiteName");
+            }
+
+            // should Uri take 2 params? ttodoshrirs instead of we doing the appending/combining
+            return new Uri(GetGatewayUri(mobileServiceUri) + userSiteName + ComponentDelimiter);
+        }
+
+        private static Uri GetGatewayUri(Uri mobileServiceUri)
+        {
+            if (mobileServiceUri == null)
+            {
+                throw new ArgumentNullException("mobileServiceUri");
+            }
+
+            if (!mobileServiceUri.IsAbsoluteUri)
+            {
+                throw new ArgumentException(
+                    string.Format(CultureInfo.InvariantCulture, "URI {0} is not an absolute URI", mobileServiceUri),
+                    "mobileServiceUri");
+            }
+
+            return new Uri(mobileServiceUri.Scheme + SchemeDelimiter + mobileServiceUri.Host + ComponentDelimiter);
         }
 
         /// <summary>

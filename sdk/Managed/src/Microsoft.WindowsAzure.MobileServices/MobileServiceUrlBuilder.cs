@@ -118,5 +118,21 @@ namespace Microsoft.WindowsAzure.MobileServices
                                  path1.TrimEnd('/'),
                                  path2.TrimStart('/'));
         }
+
+        //ttodoshrirs comment
+        public static Uri AppendSlashIfAbsoluteUri(Uri absoluteUri)
+        {
+            if (absoluteUri == null)
+            {
+                throw new ArgumentNullException("absoluteUri");
+            }
+
+            if (!absoluteUri.AbsoluteUri.EndsWith("/"))
+            {
+                absoluteUri = new Uri(absoluteUri + "/");
+            }
+
+            return absoluteUri;
+        }
     }
 }
