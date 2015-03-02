@@ -1,4 +1,18 @@
-﻿// ----------------------------------------------------------------------------
+﻿//ttodoshrirs - does mobile and user site uri need to be public? can they be internal? basically why do we need this (IMobileServiceClient) interface? 
+
+/*
+ * 
+ * ttodoshrirs - in next checkin consider rename these:
+IMobileServiceTable
+MobileServiceTable - rename and also review usage of this.MobileServiceClient property (is design correct) ?
+MobileServiceHttpClient
+
+ */
+
+//ttodoshrirs - test projects not built
+
+
+// ----------------------------------------------------------------------------
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 

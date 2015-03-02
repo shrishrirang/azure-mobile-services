@@ -15,6 +15,16 @@ namespace Microsoft.WindowsAzure.MobileServices
     internal static class MobileServiceUrlBuilder
     {
         /// <summary>
+        /// Delimiter following the scheme in a URI.
+        /// </summary>
+        private const string SchemeDelimiter = "://";
+        
+        /// <summary>
+        /// Delimiter between components in a URI.
+        /// </summary>
+        private const string ComponentDelimiter = "/";
+
+        /// <summary>
         /// Converts a dictionary of string key-value pairs into a URI query string.
         /// </summary>
         /// <remarks>
@@ -119,20 +129,80 @@ namespace Microsoft.WindowsAzure.MobileServices
                                  path2.TrimStart('/'));
         }
 
-        //ttodoshrirs comment
-        public static Uri AppendSlashIfAbsoluteUri(Uri absoluteUri)
+        /// <summary>
+        /// Gets the user site URI.
+        /// This assumes that <see cref="mobileServiceUri"/> is a valid Azure Mobile Service URI and that <see cref="userSiteName"/>
+        /// is a valid user site name in the resource group containing the <see cref="mobileServiceUri"/>.
+        /// </summary>
+        /// <param name="mobileServiceUri">
+        /// The URI of the Azure Mobile Service. Refer <see cref="IMobileServiceClient.MobileServiceUri"/> for more details.
+        /// </param>
+        /// <param name="userSiteName">
+        /// The name of the user site.
+        /// </param>
+        /// <returns></returns>
+        /// <remarks>
+        /// This is just a helper method and doesn't validate the correctness of <see cref="mobileServiceUri"/> and <see cref="userSiteName"/>.
+        /// </remarks>
+        public static Uri GetUserSiteUri(Uri mobileServiceUri, string userSiteName)
         {
-            if (absoluteUri == null)
+            if (string.IsNullOrEmpty(userSiteName))
             {
-                throw new ArgumentNullException("absoluteUri");
+                throw new ArgumentException("Expected a non null, non empty string", "userSiteName");
             }
 
-            if (!absoluteUri.AbsoluteUri.EndsWith("/"))
+            return new Uri(GetGatewayUri(mobileServiceUri), userSiteName + ComponentDelimiter);
+        }
+
+        /// <summary>
+        /// Gets the URI of the gateway for an Azure Mobile Service.
+        /// </summary>
+        /// <param name="mobileServiceUri">
+        /// The URI of the Azure Mobile Service. Refer <see cref="IMobileServiceClient.MobileServiceUri"/> for more details.
+        /// </param>
+        /// <returns>
+        /// This is just a helper method and doesn't validate the correctness of <see cref="mobileServiceUri"/>.
+        /// </returns>
+        public static Uri GetGatewayUri(Uri mobileServiceUri)
+        {
+            if (mobileServiceUri == null)
             {
-                absoluteUri = new Uri(absoluteUri + "/");
+                throw new ArgumentNullException("mobileServiceUri");
             }
 
-            return absoluteUri;
+            if (!mobileServiceUri.IsAbsoluteUri)
+            {
+                throw new ArgumentException(
+                    string.Format(CultureInfo.InvariantCulture, "URI {0} is not an absolute URI", mobileServiceUri),
+                    "mobileServiceUri");
+            }
+
+            return new Uri(mobileServiceUri.Scheme + SchemeDelimiter + mobileServiceUri.Host + ComponentDelimiter);
+        }
+
+        /// <summary>
+        /// Appends a slash ('/') if <see cref="uri"/> is an absolute URI and is missing a trailing slash.
+        /// </summary>
+        /// <param name="uri">
+        /// Absolute URI to add a trailing slash to.
+        /// </param>
+        /// <returns>
+        /// URI with a slash appended to <see cref="uri"/> if it is an absolute URI and is missing a trailing slash.
+        /// Else, <see cref="uri"/> is returned unchanged.
+        /// </returns>
+        public static Uri AddTrailingSlashIfAbsoluteUri(Uri uri)
+        {
+            if (uri == null)
+            {
+                throw new ArgumentNullException("uri");
+            }
+
+            if (uri.IsAbsoluteUri && !uri.AbsoluteUri.EndsWith("/"))
+            {
+                uri = new Uri(uri + "/");
+            }
+
+            return uri;
         }
     }
 }

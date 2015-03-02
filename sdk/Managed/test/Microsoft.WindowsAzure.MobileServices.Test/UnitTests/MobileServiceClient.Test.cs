@@ -31,7 +31,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             //string id = (string)JToken.Parse(settings)["applicationInstallationId"];
             //Assert.IsNotNull(id);
         }
-        //ttodoshrirs - test projects not built
+
         [TestMethod]
         public void Construction()
         {

@@ -125,14 +125,6 @@ namespace Microsoft.WindowsAzure.MobileServices
                 return result.Response;
             }
         }
-        /*
-         * 
-         * ttodoshrirs - in next checkin rename these:
-IMobileServiceTable
-MobileServiceTable - rename and also review usage of this.MobileServiceClient property (is design correct) ?
-MobileServiceHttpClient
-
-         */
 
         /// <summary>
         /// Executes a query against the table.
