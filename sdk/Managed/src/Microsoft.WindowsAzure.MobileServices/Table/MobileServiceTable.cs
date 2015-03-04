@@ -150,7 +150,7 @@ namespace Microsoft.WindowsAzure.MobileServices
             string uriPath;
             Uri uri;
             bool absolute;
-            if (HttpUtility.TryParseQueryUri(this.MobileServiceClient.UserSiteUri, query, out uri, out absolute))
+            if (HttpUtility.TryParseQueryUri(this.MobileServiceClient.MobileAppCodeUri, query, out uri, out absolute))
             {
                 if (absolute)
                 {

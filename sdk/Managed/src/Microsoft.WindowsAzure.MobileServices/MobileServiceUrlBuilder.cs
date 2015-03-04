@@ -20,9 +20,9 @@ namespace Microsoft.WindowsAzure.MobileServices
         private const string SchemeDelimiter = "://";
         
         /// <summary>
-        /// Delimiter between components in a URI.
+        /// A constant variable that defines the character '/'.
         /// </summary>
-        private const string ComponentDelimiter = "/";
+        private const char Slash = '/';
 
         /// <summary>
         /// Converts a dictionary of string key-value pairs into a URI query string.
@@ -124,82 +124,99 @@ namespace Microsoft.WindowsAzure.MobileServices
             }
 
             return string.Format(CultureInfo.InvariantCulture,
-                                 "{0}/{1}",
-                                 path1.TrimEnd('/'),
-                                 path2.TrimStart('/'));
+                                 "{0}{1}{2}",
+                                 path1.TrimEnd(Slash),
+                                 Slash,
+                                 path2.TrimStart(Slash));
         }
 
         /// <summary>
-        /// Gets the user site URI.
-        /// This assumes that <see cref="mobileServiceUri"/> is a valid Azure Mobile Service URI and that <see cref="userSiteName"/>
-        /// is a valid user site name in the resource group containing the <see cref="mobileServiceUri"/>.
+        /// Gets the URI of the Azure Mobile Application code.
+        /// This assumes that <paramref name="mobileAppUri"/> is a valid Azure Mobile Application URI and that <see cref="mobileAppCodeSiteName"/>
+        /// is a valid Azure Mobile Application code site name in the resource group containing <see cref="mobileAppUri"/>.
         /// </summary>
-        /// <param name="mobileServiceUri">
-        /// The URI of the Azure Mobile Service. Refer <see cref="IMobileServiceClient.MobileServiceUri"/> for more details.
+        /// <param name="mobileAppUri">
+        /// Absolute URI of the Azure Mobile Application. Refer <see cref="IMobileServiceClient.MobileAppUri"/> for more details.
         /// </param>
-        /// <param name="userSiteName">
-        /// The name of the user site.
-        /// </param>
-        /// <returns></returns>
-        /// <remarks>
-        /// This is just a helper method and doesn't validate the correctness of <see cref="mobileServiceUri"/> and <see cref="userSiteName"/>.
-        /// </remarks>
-        public static Uri GetUserSiteUri(Uri mobileServiceUri, string userSiteName)
-        {
-            if (string.IsNullOrEmpty(userSiteName))
-            {
-                throw new ArgumentException("Expected a non null, non empty string", "userSiteName");
-            }
-
-            return new Uri(GetGatewayUri(mobileServiceUri), userSiteName + ComponentDelimiter);
-        }
-
-        /// <summary>
-        /// Gets the URI of the gateway for an Azure Mobile Service.
-        /// </summary>
-        /// <param name="mobileServiceUri">
-        /// The URI of the Azure Mobile Service. Refer <see cref="IMobileServiceClient.MobileServiceUri"/> for more details.
+        /// <param name="mobileAppCodeSiteName">
+        /// The name of the Azure Mobile Application code site.
         /// </param>
         /// <returns>
-        /// This is just a helper method and doesn't validate the correctness of <see cref="mobileServiceUri"/>.
+        /// Absolute URI of the Azure Mobile Application code.
         /// </returns>
-        public static Uri GetGatewayUri(Uri mobileServiceUri)
+        /// <remarks>
+        /// This is just a helper method and doesn't validate the correctness of <paramref name="mobileAppUri"/> and <paramref name="mobileAppCodeSiteName"/>.
+        /// </remarks>
+        public static Uri GetMobileAppCodeUri(Uri mobileAppUri, string mobileAppCodeSiteName)
         {
-            if (mobileServiceUri == null)
+            if (string.IsNullOrEmpty(mobileAppCodeSiteName))
             {
-                throw new ArgumentNullException("mobileServiceUri");
+                throw new ArgumentException("Expected a non null, non empty string", "mobileAppCodeSiteName");
             }
 
-            if (!mobileServiceUri.IsAbsoluteUri)
+            if (!mobileAppUri.IsAbsoluteUri)
             {
                 throw new ArgumentException(
-                    string.Format(CultureInfo.InvariantCulture, "URI {0} is not an absolute URI", mobileServiceUri),
-                    "mobileServiceUri");
+                    string.Format(CultureInfo.InvariantCulture,
+                        "URI {0} is not an absolute URI. An absolute URI is expected.", mobileAppUri),
+                    "mobileAppUri");
             }
 
-            return new Uri(mobileServiceUri.Scheme + SchemeDelimiter + mobileServiceUri.Host + ComponentDelimiter);
+            return new Uri(GetGatewayUri(mobileAppUri), AddTrailingSlash(mobileAppCodeSiteName));
         }
 
         /// <summary>
-        /// Appends a slash ('/') if <see cref="uri"/> is an absolute URI and is missing a trailing slash.
+        /// Gets the URI of the gateway for an Azure Mobile Application.
         /// </summary>
-        /// <param name="uri">
-        /// Absolute URI to add a trailing slash to.
+        /// <param name="mobileAppUri">
+        /// Absolute URI of the Azure Mobile Application. Refer <see cref="IMobileServiceClient.MobileAppUri"/> for more details.
         /// </param>
         /// <returns>
-        /// URI with a slash appended to <see cref="uri"/> if it is an absolute URI and is missing a trailing slash.
-        /// Else, <see cref="uri"/> is returned unchanged.
+        /// The absolute URI of the gateway for an Azure Mobile Application.
         /// </returns>
-        public static Uri AddTrailingSlashIfAbsoluteUri(Uri uri)
+        /// <remarks>
+        /// This is just a helper method and doesn't validate the correctness of <paramref name="mobileAppUri"/>.
+        /// </remarks>
+        public static Uri GetGatewayUri(Uri mobileAppUri)
+        {
+            if (mobileAppUri == null)
+            {
+                throw new ArgumentNullException("mobileAppUri");
+            }
+
+            if (!mobileAppUri.IsAbsoluteUri)
+            {
+                throw new ArgumentException(
+                    string.Format(CultureInfo.InvariantCulture, "URI {0} is not an absolute URI. An absolute URI is expected.", mobileAppUri),
+                    "mobileAppUri");
+            }
+
+            return new Uri(mobileAppUri.Scheme + SchemeDelimiter + mobileAppUri.Host + Slash);
+        }
+
+        /// <summary>
+        /// Appends a slash ('/') to <paramref name="uri"/> if it is missing a trailing slash.
+        /// </summary>
+        /// <param name="uri">
+        /// URI to add a trailing slash to.
+        /// </param>
+        /// <returns>
+        /// Uri with a slash appended to <paramref name="uri"/> if it is missing one.
+        /// Else, <paramref name="uri"/> is returned unchanged.
+        /// </returns>
+        /// <remarks>
+        /// No validation of the uri is performed.
+        /// </remarks>
+        public static string AddTrailingSlash(string uri)
         {
             if (uri == null)
             {
                 throw new ArgumentNullException("uri");
             }
 
-            if (uri.IsAbsoluteUri && !uri.AbsoluteUri.EndsWith("/"))
+            if (!uri.EndsWith(Slash.ToString()))
             {
-                uri = new Uri(uri + "/");
+                uri = uri + Slash;
             }
 
             return uri;

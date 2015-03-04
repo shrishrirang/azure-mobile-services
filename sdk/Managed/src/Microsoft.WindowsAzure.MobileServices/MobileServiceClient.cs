@@ -44,14 +44,14 @@ namespace Microsoft.WindowsAzure.MobileServices
         internal string applicationInstallationId;
 
         /// <summary>
-        /// Absolute URI of the Microsoft Azure Mobile Service.
+        /// Absolute URI of the Microsoft Azure Mobile Application.
         /// </summary>
-        public Uri MobileServiceUri { get; private set; }
+        public Uri MobileAppUri { get; private set; }
 
         /// <summary>
-        /// Absolute URI of the user code website. This can point to a deployment on Azure or elsewhere.
+        /// Absolute URI of the Microsoft Azure Mobile Application code site. This can point to a deployment on Azure or elsewhere.
         /// </summary>
-        public Uri UserSiteUri { get; private set; }
+        public Uri MobileAppCodeUri { get; private set; }
 
         /// <summary>
         /// Absolute URI of the resource group's gateway.
@@ -115,113 +115,58 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// <summary>
         /// Initializes a new instance of the MobileServiceClient class.
         /// </summary>
-        /// <param name="mobileServiceUri">
-        /// Absolute URI of the Microsoft Azure Mobile Service. See <see cref="IMobileServiceClient.MobileServiceUri"/> for more details.
+        /// <param name="mobileAppUrl">
+        /// Absolute URI of the Microsoft Azure Mobile Application. See <see cref="IMobileServiceClient.MobileAppUri"/> for more details.
         /// </param>
-        /// <param name="userSiteName">
-        /// The name of the user code website.
-        /// </param>
-        /// <param name="applicationKey">
-        /// The application key for the Microsoft Azure Mobile Service.
-        /// </param> 
-        public MobileServiceClient(Uri mobileServiceUri, string userSiteName, string applicationKey = null)
-            : this(mobileServiceUri, userSiteName, applicationKey, null)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the MobileServiceClient class.
-        /// </summary>
-        /// <param name="mobileServiceUri">
-        /// Absolute URI of the Microsoft Azure Mobile Service. See <see cref="IMobileServiceClient.MobileServiceUri"/> for more details.
-        /// </param>
-        /// <param name="userSiteUri">
-        /// Absolute URI of the user code website. See <see cref="IMobileServiceClient.UserSiteUri"/> for more details.
+        /// <param name="mobileAppCodeSiteNameOrUrl">
+        /// Name or absolute URI of the Microsoft Azure Mobile Application code site. See <see cref="IMobileServiceClient.MobileAppCodeUri"/> for more details.
         /// </param>
         /// <param name="applicationKey">
-        /// The application key for the Microsoft Azure Mobile Service.
-        /// </param> 
-        public MobileServiceClient(Uri mobileServiceUri, Uri userSiteUri, string applicationKey = null)
-            : this(mobileServiceUri, userSiteUri, applicationKey, null)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the MobileServiceClient class.
-        /// </summary>
-        /// <param name="mobileServiceUri">
-        /// Absolute URI of the Microsoft Azure Mobile Service. See <see cref="IMobileServiceClient.MobileServiceUri"/> for more details.
-        /// </param>
-        /// <param name="userSiteName">
-        /// The name of the user code website.
-        /// </param>
-        /// <param name="applicationKey">
-        /// The application key for the Microsoft Azure Mobile Service.
+        /// The application key for the Microsoft Azure Mobile Application.
         /// </param> 
         /// <param name="handlers">
         /// Chain of <see cref="HttpMessageHandler" /> instances. 
         /// All but the last should be <see cref="DelegatingHandler"/>s. 
         /// </param>
-        public MobileServiceClient(Uri mobileServiceUri, string userSiteName, string applicationKey, params HttpMessageHandler[] handlers)
-            : this(mobileServiceUri, MobileServiceUrlBuilder.GetUserSiteUri(mobileServiceUri, userSiteName), applicationKey, handlers)
+        public MobileServiceClient(string mobileAppUrl, string mobileAppCodeSiteNameOrUrl, string applicationKey = null, params HttpMessageHandler[] handlers)
         {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the MobileServiceClient class.
-        /// </summary>
-        /// <param name="mobileServiceUri">
-        /// Absolute URI of the Microsoft Azure Mobile Service. See <see cref="IMobileServiceClient.MobileServiceUri"/> for more details.
-        /// </param>
-        /// <param name="userSiteUri">
-        /// Absolute URI of the user code website. See <see cref="IMobileServiceClient.UserSiteUri"/> for more details.
-        /// </param>
-        /// <param name="applicationKey">
-        /// The application key for the Microsoft Azure Mobile Service.
-        /// </param> 
-        /// <param name="handlers">
-        /// Chain of <see cref="HttpMessageHandler" /> instances. 
-        /// All but the last should be <see cref="DelegatingHandler"/>s. 
-        /// </param>
-        public MobileServiceClient(Uri mobileServiceUri, Uri userSiteUri, string applicationKey, params HttpMessageHandler[] handlers)
-        {
-            if (mobileServiceUri == null)
+            if (mobileAppUrl == null)
             {
-                throw new ArgumentNullException("mobileServiceUri");
+                throw new ArgumentNullException("mobileAppUrl");
             }
 
-            if (userSiteUri == null)
+            if (string.IsNullOrEmpty(mobileAppCodeSiteNameOrUrl))
             {
-                throw new ArgumentNullException("userSiteUri");
+                throw new ArgumentException("Expected a non-null, non-empty string", "mobileAppCodeSiteNameOrUrl");
             }
 
-            if (!mobileServiceUri.IsAbsoluteUri)
+            if (!Uri.IsWellFormedUriString(mobileAppUrl, UriKind.Absolute))
             {
-                throw new ArgumentException(
-                    string.Format(CultureInfo.InvariantCulture,
-                        "URI {0} is not an absolute URI. An absolute URI is expected.", mobileServiceUri),
-                    "mobileServiceUri");
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture,
+                    "{0} is not an absolute URL. Only absolute URLs are supported", mobileAppUrl));
+            }
+            
+            // Trailing slash in the URI is important. Add one if necessary.
+            this.MobileAppUri = new Uri(MobileServiceUrlBuilder.AddTrailingSlash(mobileAppUrl), UriKind.Absolute);
+
+            // Build the Mobile Application code site URI.
+            if (Uri.IsWellFormedUriString(mobileAppCodeSiteNameOrUrl, UriKind.Absolute))
+            {
+                this.MobileAppCodeUri = new Uri(MobileServiceUrlBuilder.AddTrailingSlash(mobileAppCodeSiteNameOrUrl), UriKind.Absolute);
+            }
+            else // If mobileAppCodeSiteNameOrUrl is not a well formed absolute URL, treat it as Azure Mobile Application code site name.
+            {
+                this.MobileAppCodeUri = MobileServiceUrlBuilder.GetMobileAppCodeUri(this.MobileAppUri,
+                    mobileAppCodeSiteNameOrUrl);
             }
 
-            if (!userSiteUri.IsAbsoluteUri)
-            {
-                throw new ArgumentException(
-                    string.Format(CultureInfo.InvariantCulture,
-                        "URI {0} is not an absolute URI. An absolute URI is expected.", userSiteUri),
-                    "userSiteUri");
-            }
-
-            // Trailing slashes in URIs are important. Fix the incoming URIs right here before we pass them on further.
-            this.MobileServiceUri = MobileServiceUrlBuilder.AddTrailingSlashIfAbsoluteUri(mobileServiceUri);
-            this.UserSiteUri = MobileServiceUrlBuilder.AddTrailingSlashIfAbsoluteUri(userSiteUri);
-
-            this.GatewayUri = MobileServiceUrlBuilder.GetGatewayUri(mobileServiceUri);
+            this.GatewayUri = MobileServiceUrlBuilder.GetGatewayUri(this.MobileAppUri);
 
             this.ApplicationKey = applicationKey;
             this.applicationInstallationId = GetApplicationInstallationId();
 
             handlers = handlers ?? EmptyHttpMessageHandlers;
-            this.HttpClient = new MobileServiceHttpClient(handlers, this.UserSiteUri, this.applicationInstallationId, this.ApplicationKey);
+            this.HttpClient = new MobileServiceHttpClient(handlers, this.MobileAppCodeUri, this.applicationInstallationId, this.ApplicationKey);
             this.Serializer = new MobileServiceSerializer();
             this.SyncContext = new MobileServiceSyncContext(this);
         }

@@ -39,19 +39,19 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             string appKey = "secret...";
 
             MobileServiceClient service = new MobileServiceClient(new Uri(appUrl), appKey);
-            Assert.AreEqual(appUrl, service.MobileServiceUri.ToString());
+            Assert.AreEqual(appUrl, service.MobileAppUri.ToString());
             Assert.AreEqual(appKey, service.ApplicationKey);
 
             service = new MobileServiceClient(appUrl, appKey);
-            Assert.AreEqual(appUrl, service.MobileServiceUri.ToString());
+            Assert.AreEqual(appUrl, service.MobileAppUri.ToString());
             Assert.AreEqual(appKey, service.ApplicationKey);
 
             service = new MobileServiceClient(new Uri(appUrl));
-            Assert.AreEqual(appUrl, service.MobileServiceUri.ToString());
+            Assert.AreEqual(appUrl, service.MobileAppUri.ToString());
             Assert.AreEqual(null, service.ApplicationKey);
 
             service = new MobileServiceClient(appUrl);
-            Assert.AreEqual(appUrl, service.MobileServiceUri.ToString());
+            Assert.AreEqual(appUrl, service.MobileAppUri.ToString());
             Assert.AreEqual(null, service.ApplicationKey);
 
             Uri none = null;
@@ -71,7 +71,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 new MobileServiceClient(new Uri(appUrl), appKey, hijack);
 
             // Ensure properties are copied over
-            Assert.AreEqual(appUrl, service.MobileServiceUri.ToString());
+            Assert.AreEqual(appUrl, service.MobileAppUri.ToString());
             Assert.AreEqual(appKey, service.ApplicationKey);
 
             // Set the handler to return an empty array

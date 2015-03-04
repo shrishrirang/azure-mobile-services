@@ -193,7 +193,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Sync
             }
 
             var table = await this.GetTable(tableName);
-            var queryDescription = MobileServiceTableQueryDescription.Parse(this.client.UserSiteUri, tableName, query);
+            var queryDescription = MobileServiceTableQueryDescription.Parse(this.client.MobileAppCodeUri, tableName, query);
 
 
             // local schema should be same as remote schema otherwise push can't function
