@@ -26,8 +26,8 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             var hijack = new TestHttpHandler();
             hijack.SetResponseContent("[{\"col1\":\"Hey\"}]");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
-            UrlTestHelper urlTestHelper = new UrlTestHelper(service);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
+            MobileAppUriValidator mobileAppUriValidator = new MobileAppUriValidator(service);
 
             IMobileServiceTable<ToDo> table = service.GetTable<ToDo>();
 
@@ -40,7 +40,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         [AsyncTestMethod]
         public async Task ReadAsync_Throws_IfAbsoluteUriHostNameDoesNotMatch()
         {
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", new TestHttpHandler());
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", new TestHttpHandler());
             IMobileServiceTable<ToDo> table = service.GetTable<ToDo>();
 
             var ex = await AssertEx.Throws<ArgumentException>(async () => await table.ReadAsync<ToDo>("http://www.contoso.com/about?$filter=a eq b&$orderby=c"));
@@ -55,13 +55,13 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 new 
                 {
-                    ServiceUri = UrlTestHelper.DefaultMobileApp, 
+                    ServiceUri = MobileAppUriValidator.DefaultMobileApp, 
                     QueryUri = "/about?$filter=a eq b&$orderby=c", 
                     RequestUri = "http://www.testgateway.com/about?$filter=a eq b&$orderby=c"
                 },
                 new 
                 {
-                    ServiceUri = UrlTestHelper.DefaultMobileApp, 
+                    ServiceUri = MobileAppUriValidator.DefaultMobileApp, 
                     QueryUri = "/about?$filter=a eq b&$orderby=c", 
                     RequestUri = "http://www.testgateway.com/about?$filter=a eq b&$orderby=c"
                 }
@@ -137,7 +137,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 hijack.Responses[0].Headers.Add("Link", link);
             }
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
             IMobileServiceTable<ToDo> table = service.GetTable<ToDo>();
             return table;
         }
@@ -151,7 +151,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                                         ""__createdAt"": ""2014-01-29T23:01:33.444Z""
                                         }]");
 
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
             IMobileServiceTable<ToDoWithSystemPropertiesType> table = service.GetTable<ToDoWithSystemPropertiesType>();
 
             IEnumerable<ToDoWithSystemPropertiesType> results = await table.ReadAsync();
@@ -170,7 +170,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                                         ""__createdAt"": ""2014-01-29T23:01:33.444Z""
                                         }]");
 
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
             service.SerializerSettings.DateParseHandling = DateParseHandling.None;
             IMobileServiceTable<ToDoWithSystemPropertiesType> table = service.GetTable<ToDoWithSystemPropertiesType>();
 
@@ -196,7 +196,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 string jsonTestId = testId.Replace("\\", "\\\\").Replace("\"", "\\\"");
 
                 hijack.SetResponseContent("[{\"id\":\"" + jsonTestId + "\",\"String\":\"Hey\"}]");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -222,7 +222,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
 
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("[{\"id\":" + stringTestId + ",\"String\":\"Hey\"}]");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -240,7 +240,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("[{\"id\":null,\"String\":\"Hey\"}]");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -257,7 +257,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("[{\"String\":\"Hey\"}]");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -285,14 +285,14 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
 
                 hijack.SetResponseContent("[{\"id\":\"" + jsonTestId + "\",\"String\":\"Hey\"}]");
 
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
-                UrlTestHelper urlTestHelper = new UrlTestHelper(service);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
+                MobileAppUriValidator mobileAppUriValidator = new MobileAppUriValidator(service);
 
                 IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
                 List<StringIdType> items = await table.Where(t => t.Id == testId).ToListAsync();
                 string idForOdataQuery = Uri.EscapeDataString(testId.Replace("'", "''"));
-                Uri expectedUri = new Uri(string.Format(urlTestHelper.GetTableUri("StringIdType?$filter=(id eq '{0}')"), idForOdataQuery));
+                Uri expectedUri = new Uri(string.Format(mobileAppUriValidator.GetTableUri("StringIdType?$filter=(id eq '{0}')"), idForOdataQuery));
 
                 Assert.AreEqual(1, items.Count());
                 Assert.AreEqual(testId, items[0].Id);
@@ -306,13 +306,13 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("[{\"id\":null,\"String\":\"Hey\"}]");
 
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
-            UrlTestHelper urlTestHelper = new UrlTestHelper(service);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
+            MobileAppUriValidator mobileAppUriValidator = new MobileAppUriValidator(service);
 
             IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
             List<StringIdType> items = await table.Where(t => t.Id == null).ToListAsync();
-            Uri expectedUri = new Uri(urlTestHelper.GetTableUri("StringIdType?$filter=(id eq null)"));
+            Uri expectedUri = new Uri(mobileAppUriValidator.GetTableUri("StringIdType?$filter=(id eq null)"));
 
             Assert.AreEqual(1, items.Count());
             Assert.AreEqual(null, items[0].Id);
@@ -335,13 +335,13 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
 
                 hijack.SetResponseContent("[{\"id\":\"" + jsonTestId + "\",\"String\":\"Hey\"}]");
 
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
-                UrlTestHelper urlTestHelper = new UrlTestHelper(service);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
+                MobileAppUriValidator mobileAppUriValidator = new MobileAppUriValidator(service);
 
                 IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
                 var items = await table.Select(s => new { Id = s.Id, Message = s.String }).ToListAsync();
-                Uri expectedUri = new Uri(urlTestHelper.GetTableUri("StringIdType?$select=id,String"));
+                Uri expectedUri = new Uri(mobileAppUriValidator.GetTableUri("StringIdType?$select=id,String"));
 
                 Assert.AreEqual(1, items.Count());
                 Assert.AreEqual(testId, items[0].Id);
@@ -356,13 +356,13 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("[{\"id\":null,\"String\":\"Hey\"}]");
 
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
-            UrlTestHelper urlTestHelper = new UrlTestHelper(service);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
+            MobileAppUriValidator mobileAppUriValidator = new MobileAppUriValidator(service);
 
             IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
             var items = await table.Select(s => new { Id = s.Id, Message = s.String }).ToListAsync();
-            Uri expectedUri = new Uri(urlTestHelper.GetTableUri("StringIdType?$select=id,String"));
+            Uri expectedUri = new Uri(mobileAppUriValidator.GetTableUri("StringIdType?$select=id,String"));
 
             Assert.AreEqual(1, items.Count());
             Assert.AreEqual(null, items[0].Id);
@@ -376,13 +376,13 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("[{\"String\":\"Hey\"}]");
 
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
-            UrlTestHelper urlTestHelper = new UrlTestHelper(service);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
+            MobileAppUriValidator mobileAppUriValidator = new MobileAppUriValidator(service);
 
             IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
             var items = await table.Select(s => new { Id = s.Id, Message = s.String }).ToListAsync();
-            Uri expectedUri = new Uri(urlTestHelper.GetTableUri("StringIdType?$select=id,String"));
+            Uri expectedUri = new Uri(mobileAppUriValidator.GetTableUri("StringIdType?$select=id,String"));
 
             Assert.AreEqual(1, items.Count());
             Assert.AreEqual(null, items[0].Id);
@@ -406,13 +406,13 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
 
                 hijack.SetResponseContent("[{\"id\":\"" + jsonTestId + "\",\"String\":\"Hey\"}]");
 
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
-                UrlTestHelper urlTestHelper = new UrlTestHelper(service);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
+                MobileAppUriValidator mobileAppUriValidator = new MobileAppUriValidator(service);
 
                 IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
                 var items = await table.OrderBy(s => s.Id).ToListAsync();
-                Uri expectedUri = new Uri(urlTestHelper.GetTableUri("StringIdType?$orderby=id"));
+                Uri expectedUri = new Uri(mobileAppUriValidator.GetTableUri("StringIdType?$orderby=id"));
 
                 Assert.AreEqual(1, items.Count());
                 Assert.AreEqual(testId, items[0].Id);
@@ -437,13 +437,13 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
 
                 hijack.SetResponseContent("[{\"id\":\"" + jsonTestId + "\",\"String\":\"Hey\"}]");
 
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
-                UrlTestHelper urlTestHelper = new UrlTestHelper(service);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
+                MobileAppUriValidator mobileAppUriValidator = new MobileAppUriValidator(service);
 
                 IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
                 var items = await table.OrderByDescending(s => s.Id).ToListAsync();
-                Uri expectedUri = new Uri(urlTestHelper.GetTableUri("StringIdType?$orderby=id desc"));
+                Uri expectedUri = new Uri(mobileAppUriValidator.GetTableUri("StringIdType?$orderby=id desc"));
 
                 Assert.AreEqual(1, items.Count());
                 Assert.AreEqual(testId, items[0].Id);
@@ -462,8 +462,8 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("[{\"id\":" + testId + ",\"String\":\"Hey\"}]");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
-                                UrlTestHelper urlTestHelper = new UrlTestHelper(service);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
+                                MobileAppUriValidator mobileAppUriValidator = new MobileAppUriValidator(service);
 
                 IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
@@ -485,7 +485,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("[{\"id\":" + testId.ToString().ToLower() + ",\"String\":\"Hey\"}]");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
@@ -503,7 +503,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("[{\"id\":null,\"String\":\"Hey\"}]");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
@@ -520,7 +520,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("[{\"String\":\"Hey\"}]");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
@@ -542,7 +542,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("[{\"id\":\"" + testId + "\",\"String\":\"Hey\"}]");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
@@ -573,13 +573,13 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("[{\"id\":" + testId + ",\"String\":\"Hey\"}]");
 
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
-                UrlTestHelper urlTestHelper = new UrlTestHelper(service);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
+                MobileAppUriValidator mobileAppUriValidator = new MobileAppUriValidator(service);
 
                 IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
                 List<LongIdType> items = await table.Where(t => t.Id == testId).ToListAsync();
-                Uri expectedUri = new Uri(string.Format(urlTestHelper.GetTableUri("LongIdType?$filter=(id eq {0}L)"), testId));
+                Uri expectedUri = new Uri(string.Format(mobileAppUriValidator.GetTableUri("LongIdType?$filter=(id eq {0}L)"), testId));
 
                 Assert.AreEqual(1, items.Count());
                 Assert.AreEqual(testId, items[0].Id);
@@ -593,13 +593,13 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("[{\"id\":null,\"String\":\"Hey\"}]");
 
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
-            UrlTestHelper urlTestHelper = new UrlTestHelper(service);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
+            MobileAppUriValidator mobileAppUriValidator = new MobileAppUriValidator(service);
 
             IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
             List<LongIdType> items = await table.Where(t => t.Id == null).ToListAsync();
-            Uri expectedUri = new Uri(urlTestHelper.GetTableUri("LongIdType?$filter=(id eq null)"));
+            Uri expectedUri = new Uri(mobileAppUriValidator.GetTableUri("LongIdType?$filter=(id eq null)"));
 
             Assert.AreEqual(1, items.Count());
             Assert.AreEqual(0L, items[0].Id);
@@ -617,13 +617,13 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("[{\"id\":" + testId + ",\"String\":\"Hey\"}]");
 
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
-                UrlTestHelper urlTestHelper = new UrlTestHelper(service);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
+                MobileAppUriValidator mobileAppUriValidator = new MobileAppUriValidator(service);
 
                 IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
                 var items = await table.Select(s => new { Id = s.Id, Message = s.String }).ToListAsync();
-                Uri expectedUri = new Uri(urlTestHelper.GetTableUri("LongIdType?$select=id,String"));
+                Uri expectedUri = new Uri(mobileAppUriValidator.GetTableUri("LongIdType?$select=id,String"));
 
                 Assert.AreEqual(1, items.Count());
                 Assert.AreEqual(testId, items[0].Id);
@@ -638,13 +638,13 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("[{\"id\":null,\"String\":\"Hey\"}]");
 
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
-            UrlTestHelper urlTestHelper = new UrlTestHelper(service);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
+            MobileAppUriValidator mobileAppUriValidator = new MobileAppUriValidator(service);
 
             IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
             var items = await table.Select(s => new { Id = s.Id, Message = s.String }).ToListAsync();
-            Uri expectedUri = new Uri(urlTestHelper.GetTableUri("LongIdType?$select=id,String"));
+            Uri expectedUri = new Uri(mobileAppUriValidator.GetTableUri("LongIdType?$select=id,String"));
 
             Assert.AreEqual(1, items.Count());
             Assert.AreEqual(0L, items[0].Id);
@@ -658,13 +658,13 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("[{\"String\":\"Hey\"}]");
 
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
-            UrlTestHelper urlTestHelper = new UrlTestHelper(service);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
+            MobileAppUriValidator mobileAppUriValidator = new MobileAppUriValidator(service);
 
             IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
             var items = await table.Select(s => new { Id = s.Id, Message = s.String }).ToListAsync();
-            Uri expectedUri = new Uri(urlTestHelper.GetTableUri("LongIdType?$select=id,String"));
+            Uri expectedUri = new Uri(mobileAppUriValidator.GetTableUri("LongIdType?$select=id,String"));
 
             Assert.AreEqual(1, items.Count());
             Assert.AreEqual(0L, items[0].Id);
@@ -683,13 +683,13 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("[{\"id\":" + testId + ",\"String\":\"Hey\"}]");
 
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
-                UrlTestHelper urlTestHelper = new UrlTestHelper(service);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
+                MobileAppUriValidator mobileAppUriValidator = new MobileAppUriValidator(service);
 
                 IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
                 var items = await table.OrderBy(s => s.Id).ToListAsync();
-                Uri expectedUri = new Uri(urlTestHelper.GetTableUri("LongIdType?$orderby=id"));
+                Uri expectedUri = new Uri(mobileAppUriValidator.GetTableUri("LongIdType?$orderby=id"));
 
                 Assert.AreEqual(1, items.Count());
                 Assert.AreEqual(testId, items[0].Id);
@@ -709,13 +709,13 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("[{\"id\":\"" + testId + "\",\"String\":\"Hey\"}]");
 
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
-                UrlTestHelper urlTestHelper = new UrlTestHelper(service);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
+                MobileAppUriValidator mobileAppUriValidator = new MobileAppUriValidator(service);
 
                 IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
                 var items = await table.OrderByDescending(s => s.Id).ToListAsync();
-                Uri expectedUri = new Uri(urlTestHelper.GetTableUri("LongIdType?$orderby=id desc"));
+                Uri expectedUri = new Uri(mobileAppUriValidator.GetTableUri("LongIdType?$orderby=id desc"));
 
                 Assert.AreEqual(1, items.Count());
                 Assert.AreEqual(testId, items[0].Id);
@@ -740,8 +740,8 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
 
 
                 hijack.SetResponseContent("{\"id\":\"" + jsonTestId + "\",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
-                                UrlTestHelper urlTestHelper = new UrlTestHelper(service);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
+                                MobileAppUriValidator mobileAppUriValidator = new MobileAppUriValidator(service);
 
                 IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -765,7 +765,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
 
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":" + stringTestId + ",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -781,7 +781,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":null,\"String\":\"Hey\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -796,7 +796,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"String\":\"Hey\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -815,14 +815,14 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":\"" + testId + "\",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
-                UrlTestHelper urlTestHelper = new UrlTestHelper(service);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
+                MobileAppUriValidator mobileAppUriValidator = new MobileAppUriValidator(service);
 
                 IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
                 StringIdType item = await table.LookupAsync(testId);
 
-                Uri expectedUri = new Uri(string.Format(urlTestHelper.GetTableUri("StringIdType/{0}"), Uri.EscapeDataString(testId)));
+                Uri expectedUri = new Uri(string.Format(mobileAppUriValidator.GetTableUri("StringIdType/{0}"), Uri.EscapeDataString(testId)));
 
                 Assert.AreEqual(testId, item.Id);
                 Assert.AreEqual("Hey", item.String);
@@ -840,7 +840,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":\"" + testId + "\",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
                 Exception exception = null;
@@ -869,7 +869,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             foreach (long testId in testIdData)
             {
                 TestHttpHandler hijack = new TestHttpHandler();
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
                 IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
                 Exception exception = null;
@@ -892,7 +892,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":null,\"String\":\"Hey\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -920,7 +920,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":\"" + testId + "\",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
@@ -943,7 +943,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 TestHttpHandler hijack = new TestHttpHandler();
 
                 hijack.SetResponseContent("{\"id\":" + stringTestId + ",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
@@ -959,7 +959,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":null,\"String\":\"Hey\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
@@ -974,7 +974,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"String\":\"Hey\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
@@ -994,7 +994,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":\"" + testId + "\",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
@@ -1022,14 +1022,14 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":\"" + testId + "\",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
-                UrlTestHelper urlTestHelper = new UrlTestHelper(service);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
+                MobileAppUriValidator mobileAppUriValidator = new MobileAppUriValidator(service);
 
                 IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
                 LongIdType item = await table.LookupAsync(testId);
 
-                Uri expectedUri = new Uri(string.Format(urlTestHelper.GetTableUri("LongIdType/{0}"), testId));
+                Uri expectedUri = new Uri(string.Format(mobileAppUriValidator.GetTableUri("LongIdType/{0}"), testId));
 
                 Assert.AreEqual(testId, item.Id);
                 Assert.AreEqual("Hey", item.String);
@@ -1046,7 +1046,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":\"" + testId + "\",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
                 Exception exception = null;
@@ -1069,7 +1069,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         public async Task LookupAsyncWithIntIdTypeAndStringIdParameter()
         {
             TestHttpHandler hijack = new TestHttpHandler();
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
             IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
             Exception exception = null;
@@ -1091,7 +1091,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":null,\"String\":\"Hey\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
@@ -1114,7 +1114,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":null,\"String\":\"Hey\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
@@ -1138,7 +1138,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             var userDefinedParameters = new Dictionary<string, string>() { { "state", "CA" } };
 
             TestHttpHandler hijack = new TestHttpHandler();
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
             IMobileServiceTable<StringType> table = service.GetTable<StringType>();
 
             hijack.SetResponseContent("{\"id\":12,\"String\":\"Hello\"}");
@@ -1166,7 +1166,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 string jsonTestId = testId.Replace("\\", "\\\\").Replace("\"", "\\\"");
 
                 hijack.SetResponseContent("{\"id\":\"" + jsonTestId + "\",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -1192,7 +1192,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 TestHttpHandler hijack = new TestHttpHandler();
 
                 hijack.SetResponseContent("{\"id\":" + stringTestId + ",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -1209,7 +1209,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":null,\"String\":\"Hey\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -1225,7 +1225,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"String\":\"Hey\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -1245,8 +1245,8 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("[{\"id\":\"" + testId + "\",\"String\":\"Hey\"}]");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
-                UrlTestHelper urlTestHelper = new UrlTestHelper(service);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
+                MobileAppUriValidator mobileAppUriValidator = new MobileAppUriValidator(service);
 
                 IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -1254,7 +1254,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 await table.RefreshAsync(item);
 
                 string idForOdataQuery = Uri.EscapeDataString(testId.Replace("'", "''"));
-                Uri expectedUri = new Uri(string.Format(urlTestHelper.GetTableUri("StringIdType?$filter=(id eq '{0}')"), idForOdataQuery));
+                Uri expectedUri = new Uri(string.Format(mobileAppUriValidator.GetTableUri("StringIdType?$filter=(id eq '{0}')"), idForOdataQuery));
 
                 Assert.AreEqual(testId, item.Id);
                 Assert.AreEqual("Hey", item.String);
@@ -1271,7 +1271,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("[{\"id\":\"" + testId + "\",\"String\":\"Hey\"}]");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -1292,7 +1292,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":\"" + testId + "\",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
                 Exception exception = null;
@@ -1316,7 +1316,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         public async Task RefreshAsyncWithStringIdTypeAndNullIdParameter()
         {
             TestHttpHandler hijack = new TestHttpHandler();
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -1337,7 +1337,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":" + testId + ",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
@@ -1358,7 +1358,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":" + testId.ToString().ToLower() + ",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
@@ -1381,7 +1381,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":null,\"String\":\"Hey\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
@@ -1397,7 +1397,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"String\":\"Hey\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
@@ -1418,7 +1418,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":\"" + testId + "\",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
@@ -1447,15 +1447,15 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("[{\"id\":" + testId + ",\"String\":\"Hey\"}]");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
-                UrlTestHelper urlTestHelper = new UrlTestHelper(service);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
+                MobileAppUriValidator mobileAppUriValidator = new MobileAppUriValidator(service);
 
                 IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
                 LongIdType item = new LongIdType() { Id = testId, String = "what?" };
                 await table.RefreshAsync(item);
 
-                Uri expectedUri = new Uri(string.Format(urlTestHelper.GetTableUri("LongIdType?$filter=(id eq {0}L)"), testId));
+                Uri expectedUri = new Uri(string.Format(mobileAppUriValidator.GetTableUri("LongIdType?$filter=(id eq {0}L)"), testId));
 
                 Assert.AreEqual(testId, item.Id);
                 Assert.AreEqual("Hey", item.String);
@@ -1467,7 +1467,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         public async Task RefreshAsyncWithIntIdTypeAndZeroIdItem()
         {
             TestHttpHandler hijack = new TestHttpHandler();
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
             LongIdType item = new LongIdType() { Id = 0, String = "what?" };
@@ -1486,7 +1486,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":\"" + testId + "\",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
                 Exception exception = null;
@@ -1511,7 +1511,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             var userDefinedParameters = new Dictionary<string, string>() { { "state", "CA" } };
 
             TestHttpHandler hijack = new TestHttpHandler();
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
             IMobileServiceTable<StringType> table = service.GetTable<StringType>();
 
             StringType expected = new StringType();
@@ -1530,7 +1530,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         public async Task RefreshAsyncThrowsWhenNotFound()
         {
             TestHttpHandler hijack = new TestHttpHandler();
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
             IMobileServiceTable<StringType> table = service.GetTable<StringType>();
 
             hijack.Response = TestHttpHandler.CreateResponse(String.Empty, HttpStatusCode.NotFound);
@@ -1563,7 +1563,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 string jsonTestId = testId.Replace("\\", "\\\\").Replace("\"", "\\\"");
 
                 hijack.SetResponseContent("{\"id\":\"" + jsonTestId + "\",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -1589,7 +1589,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 TestHttpHandler hijack = new TestHttpHandler();
 
                 hijack.SetResponseContent("{\"id\":" + stringTestId + ",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -1606,7 +1606,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":null,\"String\":\"Hey\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -1622,7 +1622,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             var hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":23,\"PublicProperty\":\"Hey\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<PocoType> table = service.GetTable<PocoType>();
 
@@ -1638,7 +1638,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"String\":\"Hey\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -1658,7 +1658,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":\"" + testId + "\",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -1688,7 +1688,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":\"an id\",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -1714,7 +1714,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":\"an id\",\"String\":\"Hey\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -1743,7 +1743,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":\"" + testId + "\",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
                 Exception exception = null;
@@ -1768,7 +1768,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":\"an id\",\"Values\":[\"goodbye\",\"universe\"]}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<TypeWithArray> table = service.GetTable<TypeWithArray>();
             var item = new TypeWithArray()
@@ -1797,7 +1797,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":" + testId + ",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
@@ -1818,7 +1818,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":" + testId.ToString().ToLower() + ",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
@@ -1836,7 +1836,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":null,\"String\":\"Hey\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
@@ -1852,7 +1852,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"String\":\"Hey\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
@@ -1868,7 +1868,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":\"an id\",\"String\":\"Hey\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
@@ -1896,7 +1896,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":" + testId + ",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
@@ -1922,7 +1922,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":10,\"String\":\"Hey\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
             LongIdType item = new LongIdType() { Id = 0, String = "what?" };
@@ -1941,7 +1941,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":\"" + testId + "\",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
                 Exception exception = null;
@@ -1967,7 +1967,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             var userDefinedParameters = new Dictionary<string, string>() { { "state", "CA" } };
 
             TestHttpHandler hijack = new TestHttpHandler();
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
             IMobileServiceTable<StringType> table = service.GetTable<StringType>();
 
             StringType obj = new StringType();
@@ -1996,7 +1996,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 string jsonTestId = testId.Replace("\\", "\\\\").Replace("\"", "\\\"");
 
                 hijack.SetResponseContent("{\"id\":\"" + jsonTestId + "\",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -2022,7 +2022,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 TestHttpHandler hijack = new TestHttpHandler();
 
                 hijack.SetResponseContent("{\"id\":" + stringTestId.ToLower() + ",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -2039,7 +2039,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":null,\"String\":\"Hey\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -2055,7 +2055,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"String\":\"Hey\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -2075,8 +2075,8 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":\"" + testId + "\",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
-                UrlTestHelper urlTestHelper = new UrlTestHelper(service);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
+                MobileAppUriValidator mobileAppUriValidator = new MobileAppUriValidator(service);
 
                 IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -2087,7 +2087,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                     Assert.AreEqual(testId, (string)itemAsJObject["id"]);
                     Assert.AreEqual("what?", (string)itemAsJObject["String"]);
                     string idForUri = Uri.EscapeDataString(testId);
-                    Uri expectedUri = new Uri(string.Format(urlTestHelper.GetTableUri("StringIdType/{0}"), idForUri));
+                    Uri expectedUri = new Uri(string.Format(mobileAppUriValidator.GetTableUri("StringIdType/{0}"), idForUri));
                     Assert.AreEqual(request.RequestUri.AbsoluteUri, expectedUri.AbsoluteUri);
                     return request;
                 };
@@ -2109,7 +2109,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":\"an id\",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
                 Exception exception = null;
@@ -2133,7 +2133,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":\"an id\",\"String\":\"Hey\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -2161,7 +2161,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":\"" + testId + "\",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
                 Exception exception = null;
@@ -2191,7 +2191,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":" + testId + ",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
@@ -2212,7 +2212,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":" + testId.ToString().ToLower() + ",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
@@ -2235,7 +2235,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":null,\"String\":\"Hey\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
@@ -2251,7 +2251,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"String\":\"Hey\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
@@ -2267,7 +2267,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":\"an id\",\"String\":\"Hey\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
 
@@ -2297,7 +2297,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":" + testId + ",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
                 LongIdType item = new LongIdType() { Id = testId, String = "what?" };
@@ -2313,7 +2313,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":10,\"String\":\"Hey\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
             Exception exception = null;
@@ -2340,7 +2340,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":\"" + testId + "\",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
                 Exception exception = null;
@@ -2366,7 +2366,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             var userDefinedParameters = new Dictionary<string, string>() { { "state", "FL" } };
 
             TestHttpHandler hijack = new TestHttpHandler();
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
             IMobileServiceTable<StringType> table = service.GetTable<StringType>();
 
             StringType obj = new StringType();
@@ -2391,8 +2391,8 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":\"" + testId + "\",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
-                UrlTestHelper urlTestHelper = new UrlTestHelper(service);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
+                MobileAppUriValidator mobileAppUriValidator = new MobileAppUriValidator(service);
 
                 IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -2400,7 +2400,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 {
                     Assert.IsNull(request.Content);
                     string idForUri = Uri.EscapeDataString(testId);
-                    Uri expectedUri = new Uri(string.Format(urlTestHelper.GetTableUri("StringIdType/{0}"), idForUri));
+                    Uri expectedUri = new Uri(string.Format(mobileAppUriValidator.GetTableUri("StringIdType/{0}"), idForUri));
                     Assert.AreEqual(request.RequestUri.AbsoluteUri, expectedUri.AbsoluteUri);
                     return new TaskFactory<HttpRequestMessage>().StartNew(() => request);
                 };
@@ -2422,7 +2422,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":\"an id\",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
                 Exception exception = null;
@@ -2446,7 +2446,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":\"an id\",\"String\":\"Hey\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
@@ -2474,7 +2474,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":\"" + testId + "\",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
                 Exception exception = null;
@@ -2505,7 +2505,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":" + testId + ",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
                 LongIdType item = new LongIdType() { Id = testId, String = "what?" };
@@ -2521,7 +2521,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":10,\"String\":\"Hey\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
             Exception exception = null;
@@ -2548,7 +2548,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 TestHttpHandler hijack = new TestHttpHandler();
                 hijack.SetResponseContent("{\"id\":\"" + testId + "\",\"String\":\"Hey\"}");
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<LongIdType> table = service.GetTable<LongIdType>();
                 Exception exception = null;
@@ -2574,7 +2574,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             var userDefinedParameters = new Dictionary<string, string>() { { "state", "WY" } };
 
             TestHttpHandler hijack = new TestHttpHandler();
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
             IMobileServiceTable<StringType> table = service.GetTable<StringType>();
 
             StringType obj = new StringType();
@@ -2604,7 +2604,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 Assert.AreEqual(req.Headers.IfMatch.First().Tag, "\"abc\"");
                 return Task.FromResult(req);
             };
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<ToDoWithSystemPropertiesType> table = service.GetTable<ToDoWithSystemPropertiesType>();
 
@@ -2622,7 +2622,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         [TestMethod]
         public void CreateQueryGeneric()
         {
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...");
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...");
             IMobileServiceTable<StringType> table = service.GetTable<StringType>();
 
             IMobileServiceTableQuery<StringType> query = table.CreateQuery();
@@ -2635,7 +2635,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("[{\"id\":12,\"String\":\"Hey\"}]");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<StringType> table = service.GetTable<StringType>();
 
@@ -2653,7 +2653,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"results\":[{\"id\":12,\"String\":\"Hey\"}], \"count\":1}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<StringType> table = service.GetTable<StringType>();
 
@@ -2672,7 +2672,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"results\":[{\"id\":12,\"String\":\"Hey\"}], \"count\":1}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<StringType> table = service.GetTable<StringType>();
 
@@ -2694,7 +2694,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
 
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("[{\"id\":12,\"String\":\"Hey\"}]");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<StringType> table = service.GetTable<StringType>();
             List<StringType> people = await table.WithParameters(userDefinedParameters).ToListAsync();
@@ -2712,7 +2712,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("[{\"id\":12,\"String\":\"Hey\"}]");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<StringType> table = service.GetTable<StringType>();
             List<StringType> people = await table.Where(p => p.Id == 12).ToListAsync();
@@ -2730,7 +2730,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("[{\"id\":12,\"String\":\"Hey\"}]");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
             List<StringIdType> people = await table.Where(p => p.Id == "12").ToListAsync();
@@ -2748,7 +2748,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("[{\"id\":12,\"String\":\"Hey\"}]");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<StringType> table = service.GetTable<StringType>();
             StringType me = new StringType();
@@ -2768,7 +2768,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("[]");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<StringType> table = service.GetTable<StringType>();
             List<StringType> people = await table.OrderBy(p => p.Id).ThenBy(p => p.String).ToListAsync();
@@ -2782,7 +2782,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("[]");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<StringType> table = service.GetTable<StringType>();
             List<StringType> people = await table.OrderBy(p => p.Id).OrderBy(p => p.String).ToListAsync();
@@ -2796,7 +2796,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("[]");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<StringType> table = service.GetTable<StringType>();
             List<StringType> people = await table.OrderByDescending(p => p.Id).ThenByDescending(p => p.String).ToListAsync();
@@ -2810,7 +2810,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("[]");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<StringType> table = service.GetTable<StringType>();
             List<StringType> people = await table.OrderBy(p => p.Id).ThenByDescending(p => p.String).ToListAsync();
@@ -2824,7 +2824,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("[]");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<StringType> table = service.GetTable<StringType>();
             List<StringType> people = await table.Skip(100).Take(10).ToListAsync();
@@ -2839,7 +2839,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":\"an id\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<CreatedAtType> createdAtTable = service.GetTable<CreatedAtType>();
 
@@ -2928,7 +2928,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":\"an id\"}");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<NotSystemPropertyCreatedAtType> createdAtTable = service.GetTable<NotSystemPropertyCreatedAtType>();
 
@@ -2977,7 +2977,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         [TestMethod]
         public void SystemPropertiesPropertySetCorrectly()
         {
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...");
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...");
 
             IMobileServiceTable<StringIdType> stringIdTable = service.GetTable<StringIdType>();
             Assert.AreEqual(stringIdTable.SystemProperties, MobileServiceSystemProperties.None);
@@ -3030,7 +3030,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         [TestMethod]
         public void IntegerIdTypesCanNotHaveSystemPropertyAttributes()
         {
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...");
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...");
             Exception exception = null;
 
             try
@@ -3063,7 +3063,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         [TestMethod]
         public void TypesCanNotHaveMultiplePropertiesWithTheSameSystemAttribute()
         {
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...");
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...");
             Exception exception = null;
 
             try
@@ -3110,7 +3110,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             TestHttpHandler hijack = new TestHttpHandler();
 
             hijack.SetResponseContent("[{\"id\":\"an id\",\"__createdAt\":\"1999-12-31T23:59:59.000Z\"}]");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<CreatedAtType> table = service.GetTable<CreatedAtType>();
 
@@ -3140,7 +3140,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             TestHttpHandler hijack = new TestHttpHandler();
 
             hijack.SetResponseContent("[{\"id\":\"an id\",\"__updatedAt\":\"1999-12-31T23:59:59.000Z\"}]");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<UpdatedAtType> table = service.GetTable<UpdatedAtType>();
 
@@ -3170,7 +3170,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             TestHttpHandler hijack = new TestHttpHandler();
 
             hijack.SetResponseContent("[{\"id\":\"an id\",\"__version\":\"AAAAAAAAH2o=\"}]");
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
             IMobileServiceTable<VersionType> table = service.GetTable<VersionType>();
 
@@ -3216,7 +3216,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
 
                 hijack.SetResponseContent("{\"id\":\"an id\",\"__version\":\"AAAAAAAAH2o=\"}");
 
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<VersionType> table = service.GetTable<VersionType>();
 
@@ -3253,7 +3253,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 hijack.SetResponseContent("{\"id\":\"an id\"}");
                 hijack.Response.Headers.ETag = new EntityTagHeaderValue(testcase.Item2);
 
-                IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+                IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
 
                 IMobileServiceTable<VersionType> table = service.GetTable<VersionType>();
 
@@ -3388,7 +3388,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 return Task.FromResult(request);
             };
 
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
             IMobileServiceTable<StringIdType> table = service.GetTable<StringIdType>();
 
             var responseContent = "{\"id\":\"the id\",\"String\":\"Hey\"}";

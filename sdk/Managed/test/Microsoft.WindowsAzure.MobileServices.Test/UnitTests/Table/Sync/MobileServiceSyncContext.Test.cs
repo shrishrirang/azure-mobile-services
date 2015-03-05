@@ -26,14 +26,14 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         [AsyncTestMethod]
         public async Task InitializeAsync_Throws_WhenStoreIsNull()
         {
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...");
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...");
             await AssertEx.Throws<ArgumentException>(() => service.SyncContext.InitializeAsync(null));
         }
 
         [AsyncTestMethod]
         public async Task InitializeAsync_DoesNotThrow_WhenSyncHandlerIsNull()
         {
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...");
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...");
             await service.SyncContext.InitializeAsync(new MobileServiceLocalStoreMock(), null);
         }
 
@@ -41,7 +41,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         public async Task PushAsync_ExecutesThePendingOperations_InOrder()
         {
             var hijack = new TestHttpHandler();
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
             var store = new MobileServiceLocalStoreMock();
             await service.SyncContext.InitializeAsync(store, new MobileServiceSyncHandler());
 
@@ -59,7 +59,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             hijack.AddResponseContent("{\"id\":\"abc\",\"String\":\"Hey\"}");
             hijack.AddResponseContent("{\"id\":\"def\",\"String\":\"What\"}");
 
-            service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
             await service.SyncContext.InitializeAsync(store, new MobileServiceSyncHandler());
 
             Assert.AreEqual(hijack.Requests.Count, 0);
@@ -74,7 +74,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             // create yet another service to make sure the old items were purged from queue
             hijack = new TestHttpHandler();
             hijack.AddResponseContent("{\"id\":\"abc\",\"String\":\"Hey\"}");
-            service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
             await service.SyncContext.InitializeAsync(store, new MobileServiceSyncHandler());
             Assert.AreEqual(hijack.Requests.Count, 0);
             await service.SyncContext.PushAsync();
@@ -87,7 +87,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             var hijack = new TestHttpHandler();
             hijack.AddResponseContent("{\"id\":\"abc\",\"String\":\"Hey\"}");
 
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
             var store = new MobileServiceLocalStoreMock();
             await service.SyncContext.InitializeAsync(store, new MobileServiceSyncHandler());
 
@@ -103,7 +103,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         public async Task PushAsync_FeatureHeaderPresentWhenRehydrated()
         {
             var hijack = new TestHttpHandler();
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
             var store = new MobileServiceLocalStoreMock();
             await service.SyncContext.InitializeAsync(store, new MobileServiceSyncHandler());
 
@@ -115,7 +115,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             hijack = new TestHttpHandler();
             hijack.AddResponseContent("{\"id\":\"abc\",\"String\":\"Hey\"}");
 
-            service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
             await service.SyncContext.InitializeAsync(store, new MobileServiceSyncHandler());
             await service.SyncContext.PushAsync();
 
@@ -137,7 +137,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             await store.UpsertAsync(MobileServiceLocalSystemTables.SyncErrors, error.Serialize(), fromServer: false);
 
             var hijack = new TestHttpHandler();
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
             await service.SyncContext.InitializeAsync(store, new MobileServiceSyncHandler());
 
             var ex = await ThrowsAsync<MobileServicePushFailedException>(service.SyncContext.PushAsync);
@@ -149,7 +149,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             var hijack = new TestHttpHandler();
             hijack.Responses.Add(new HttpResponseMessage(HttpStatusCode.NotFound));
 
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
             await service.SyncContext.InitializeAsync(new MobileServiceLocalStoreMock(), new MobileServiceSyncHandlerMock());
 
             IMobileServiceSyncTable table = service.GetSyncTable("someTable");
@@ -173,7 +173,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 throw new InvalidOperationException();
             };
 
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
             await service.SyncContext.InitializeAsync(new MobileServiceLocalStoreMock(), handler);
 
             IMobileServiceSyncTable table = service.GetSyncTable("someTable");
@@ -199,7 +199,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 return Task.FromResult(JObject.Parse("{\"id\":\"abc\",\"__version\":\"Hey\"}"));
             };
 
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
             await service.SyncContext.InitializeAsync(new MobileServiceLocalStoreMock(), handler);
 
             IMobileServiceSyncTable table = service.GetSyncTable("someTable");
@@ -237,7 +237,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 }
                 return null;
             };
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...", hijack);
             await service.SyncContext.InitializeAsync(new MobileServiceLocalStoreMock(), handler);
 
             IMobileServiceSyncTable table = service.GetSyncTable("someTable");
@@ -250,7 +250,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         [AsyncTestMethod]
         public async Task CancelAndUpdateItemAsync_UpsertsTheItemInLocalStore_AndDeletesTheOperationAndError()
         {
-            var client = new MobileServiceClient(UrlTestHelper.DefaultMobileApp);
+            var client = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp);
             var store = new MobileServiceLocalStoreMock();
             var context = new MobileServiceSyncContext(client);
             await context.InitializeAsync(store);
@@ -294,7 +294,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         [AsyncTestMethod]
         public async Task CancelAndDiscardItemAsync_DeletesTheItemInLocalStore_AndDeletesTheOperationAndError()
         {
-            var client = new MobileServiceClient(UrlTestHelper.DefaultMobileApp);
+            var client = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp);
             var store = new MobileServiceLocalStoreMock();
             var context = new MobileServiceSyncContext(client);
             await context.InitializeAsync(store);
@@ -359,7 +359,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
 
         private async Task TestOperationModifiedException(bool operationExists, Func<MobileServiceTableOperationError, MobileServiceSyncContext, Task> action)
         {
-            var client = new MobileServiceClient(UrlTestHelper.DefaultMobileApp);
+            var client = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp);
             var store = new MobileServiceLocalStoreMock();
             var context = new MobileServiceSyncContext(client);
             await context.InitializeAsync(store);

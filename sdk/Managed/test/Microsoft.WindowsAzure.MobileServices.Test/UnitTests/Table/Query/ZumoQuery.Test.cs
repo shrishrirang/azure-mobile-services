@@ -95,7 +95,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
     {
         private MobileServiceTableQueryDescription Compile<T, U>(Func<IMobileServiceTable<T>, IMobileServiceTableQuery<U>> getQuery)
         {
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp);
             IMobileServiceTable<T> table = service.GetTable<T>();
             IMobileServiceTableQuery<U> query = getQuery(table);
             MobileServiceTableQueryProvider provider = new MobileServiceTableQueryProvider();
@@ -261,7 +261,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             var userParmeters1 = new Dictionary<string, string>() { { "state", "PA" } };
             var userParmeters2 = new Dictionary<string, string>() { { "country", "USA" } };
 
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp);
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp);
             IMobileServiceTable<Product> t = service.GetTable<Product>();
 
             IMobileServiceTableQuery<Product> originalQuery = from p in t select p;

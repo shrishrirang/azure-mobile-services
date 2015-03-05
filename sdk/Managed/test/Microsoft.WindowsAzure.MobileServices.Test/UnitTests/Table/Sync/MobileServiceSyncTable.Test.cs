@@ -18,7 +18,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         [AsyncTestMethod]
         public async Task InsertAsync_GeneratesId_WhenNull()
         {
-            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...");
+            IMobileServiceClient service = new MobileServiceClient(MobileAppUriValidator.DefaultMobileApp, "secret...");
             await service.SyncContext.InitializeAsync(new MobileServiceLocalStoreMock(), new MobileServiceSyncHandler());
 
             var item = new JObject();

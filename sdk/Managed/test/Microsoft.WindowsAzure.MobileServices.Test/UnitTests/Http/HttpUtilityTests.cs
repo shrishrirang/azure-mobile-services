@@ -16,14 +16,14 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 new 
                 {
-                    ServiceUri = UrlTestHelper.DefaultMobileApp, 
+                    ServiceUri = MobileAppUriValidator.DefaultMobileApp, 
                     Query = "/about?$filter=a eq b&$orderby=c", 
                     Absolute = false,
                     Result = "http://www.testgateway.com/about?$filter=a eq b&$orderby=c"
                 },
                 new 
                 {
-                    ServiceUri = UrlTestHelper.DefaultMobileApp, 
+                    ServiceUri = MobileAppUriValidator.DefaultMobileApp, 
                     Query = "http://www.testgateway.com/about?$filter=a eq b&$orderby=c", 
                     Absolute = true,
                     Result = "http://www.testgateway.com/about?$filter=a eq b&$orderby=c"
@@ -47,13 +47,13 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             {
                 new 
                 {
-                    ServiceUri = UrlTestHelper.DefaultMobileApp, 
+                    ServiceUri = MobileAppUriValidator.DefaultMobileApp, 
                     Query = "about?$filter=a eq b&$orderby=c", 
                     Result = "http://www.testgateway.com/about?$filter=a eq b&$orderby=c"
                 },
                 new 
                 {
-                    ServiceUri = UrlTestHelper.DefaultMobileApp, 
+                    ServiceUri = MobileAppUriValidator.DefaultMobileApp, 
                     Query = "$filter=a eq b&$orderby=c", 
                     Result = "http://www.testgateway.com/about?$filter=a eq b&$orderby=c"
                 }

@@ -21,7 +21,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.UnitTests
 
         private void TestInitialize()
         {
-            string appUrl = UrlTestHelper.DefaultMobileApp;
+            string appUrl = MobileAppUriValidator.DefaultMobileApp;
             string appKey = "secret...";
             this.hijack = new TestHttpHandler();
             this.hijack.SetResponseContent(String.Empty);
