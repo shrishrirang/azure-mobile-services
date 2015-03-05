@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.MobileServices.Sync;
+using Microsoft.WindowsAzure.MobileServices.Test.UnitTests;
 using Microsoft.WindowsAzure.MobileServices.TestFramework;
 using Newtonsoft.Json.Linq;
 
@@ -25,7 +26,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         [TestMethod]
         public void InstallationId()
         {
-            MobileServiceClient service = new MobileServiceClient("http://test.com");
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp);
 
             //string settings = ApplicationData.Current.LocalSettings.Values["MobileServices.Installation.config"] as string;
             //string id = (string)JToken.Parse(settings)["applicationInstallationId"];
@@ -35,18 +36,18 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         [TestMethod]
         public void Construction()
         {
-            string appUrl = "http://www.test.com/";
+            string appUrl = UrlTestHelper.DefaultMobileApp;
             string appKey = "secret...";
 
-            MobileServiceClient service = new MobileServiceClient(new Uri(appUrl), appKey);
+            MobileServiceClient service = new MobileServiceClient(appUrl, mobileAppCodeSiteNameOrUrl:null, applicationKey:appKey);
             Assert.AreEqual(appUrl, service.MobileAppUri.ToString());
             Assert.AreEqual(appKey, service.ApplicationKey);
 
-            service = new MobileServiceClient(appUrl, appKey);
+            service = new MobileServiceClient(appUrl, mobileAppCodeSiteNameOrUrl:null, applicationKey:appKey);
             Assert.AreEqual(appUrl, service.MobileAppUri.ToString());
             Assert.AreEqual(appKey, service.ApplicationKey);
 
-            service = new MobileServiceClient(new Uri(appUrl));
+            service = new MobileServiceClient(appUrl);
             Assert.AreEqual(appUrl, service.MobileAppUri.ToString());
             Assert.AreEqual(null, service.ApplicationKey);
 
@@ -54,24 +55,22 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             Assert.AreEqual(appUrl, service.MobileAppUri.ToString());
             Assert.AreEqual(null, service.ApplicationKey);
 
-            Uri none = null;
-            Throws<ArgumentNullException>(() => new MobileServiceClient(none));
+            Throws<ArgumentNullException>(() => new MobileServiceClient(mobileAppUrl:null));
             Throws<FormatException>(() => new MobileServiceClient("not a valid uri!!!@#!@#"));
         }
-
 
         [AsyncTestMethod]
         public async Task SingleHttpHandlerConstructor()
         {
-            string appUrl = "http://www.test.com/";
             string appKey = "secret...";
             TestHttpHandler hijack = new TestHttpHandler();
 
             IMobileServiceClient service =
-                new MobileServiceClient(new Uri(appUrl), appKey, hijack);
+                new MobileServiceClient(UrlTestHelper.DefaultMobileApp, mobileAppCodeSiteNameOrUrl: null, applicationKey: appKey, handlers: hijack);
+            UrlTestHelper urlTestHelper = new UrlTestHelper(service);
 
             // Ensure properties are copied over
-            Assert.AreEqual(appUrl, service.MobileAppUri.ToString());
+            Assert.AreEqual(UrlTestHelper.DefaultMobileApp, service.MobileAppUri.ToString());
             Assert.AreEqual(appKey, service.ApplicationKey);
 
             // Set the handler to return an empty array
@@ -79,13 +78,13 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             JToken response = await service.GetTable("foo").ReadAsync("bar");
 
             // Verify the handler was in the loop
-            Assert.StartsWith(hijack.Request.RequestUri.ToString(), appUrl);
+            Assert.StartsWith(hijack.Request.RequestUri.ToString(), urlTestHelper.TableBaseUri);
         }
 
         [AsyncTestMethod]
         public async Task MultipleHttpHandlerConstructor()
         {
-            string appUrl = "http://www.test.com/";
+            string appUrl = UrlTestHelper.DefaultMobileApp;
             string appKey = "secret...";
             TestHttpHandler hijack = new TestHttpHandler();
 
@@ -98,7 +97,8 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             ComplexDelegatingHandler secondHandler = new ComplexDelegatingHandler(secondBeforeMessage, secondAfterMessage);
 
             IMobileServiceClient service =
-                new MobileServiceClient(new Uri(appUrl), appKey, firstHandler, secondHandler, hijack);
+                new MobileServiceClient(appUrl, mobileAppCodeSiteNameOrUrl: null, applicationKey: appKey,
+                    handlers: new HttpMessageHandler[] {firstHandler, secondHandler, hijack});
 
             // Validate that handlers are properly chained
             Assert.AreSame(hijack, secondHandler.InnerHandler);
@@ -122,7 +122,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         [TestMethod]
         public void Logout()
         {
-            MobileServiceClient service = new MobileServiceClient("http://www.test.com", "secret...");
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...");
             service.CurrentUser = new MobileServiceUser("123456");
             Assert.IsNotNull(service.CurrentUser);
 
@@ -133,7 +133,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         [AsyncTestMethod]
         public async Task StandardRequestFormat()
         {
-            string appUrl = "http://www.test.com";
+            string appUrl = UrlTestHelper.DefaultMobileApp;
             string appKey = "secret...";
             string collection = "tests";
             string query = "$filter=id eq 12";
@@ -163,13 +163,14 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         [AsyncTestMethod]
         public async Task ErrorMessageConstruction()
         {
-            string appUrl = "http://www.test.com";
+            string appUrl = UrlTestHelper.DefaultMobileApp;
             string appKey = "secret...";
             string collection = "tests";
             string query = "$filter=id eq 12";
 
             TestHttpHandler hijack = new TestHttpHandler();
             IMobileServiceClient service = new MobileServiceClient(appUrl, appKey, hijack);
+            UrlTestHelper urlTestHelper = new UrlTestHelper(service);
 
             // Verify the error message is correctly pulled out
             hijack.SetResponseContent("{\"error\":\"error message\",\"other\":\"donkey\"}");
@@ -197,7 +198,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 Assert.AreEqual(ex.Message, "error message");
                 Assert.AreEqual(HttpStatusCode.Unauthorized, ex.Response.StatusCode);
                 Assert.Contains(ex.Response.Content.ReadAsStringAsync().Result, "donkey");
-                Assert.StartsWith(ex.Request.RequestUri.ToString(), appUrl);
+                Assert.StartsWith(ex.Request.RequestUri.ToString(), urlTestHelper.TableBaseUri);
                 Assert.AreEqual("YOU SHALL NOT PASS.", ex.Response.ReasonPhrase);
             }
 
@@ -262,7 +263,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
 
         private async Task TestSyncContextNotInitialized(Func<IMobileServiceSyncTable<ToDoWithSystemPropertiesType>, Task> action)
         {
-            var service = new MobileServiceClient("http://www.test.com", "secret...");
+            var service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...");
             IMobileServiceSyncTable<ToDoWithSystemPropertiesType> table = service.GetSyncTable<ToDoWithSystemPropertiesType>();
             var ex = await AssertEx.Throws<InvalidOperationException>(() => action(table));
             Assert.AreEqual(ex.Message, "SyncContext is not yet initialized.");
@@ -271,7 +272,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         [TestMethod]
         public void GetTableThrowsWithNullTable()
         {
-            MobileServiceClient service = new MobileServiceClient("http://www.test.com", "secret...");
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...");
             ArgumentNullException expected = null;
 
             try
@@ -290,7 +291,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         [TestMethod]
         public void GetTableThrowsWithEmptyStringTable()
         {
-            MobileServiceClient service = new MobileServiceClient("http://www.test.com", "secret...");
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...");
             ArgumentException expected = null;
 
             try
@@ -309,7 +310,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         [AsyncTestMethod]
         public async Task InvokeCustomApiThrowsForNullApiName()
         {
-            MobileServiceClient service = new MobileServiceClient("http://www.test.com");
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp);
             ArgumentNullException expected = null;
 
             try
@@ -328,12 +329,14 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         public async Task InvokeCustomAPISimple()
         {
             TestHttpHandler hijack = new TestHttpHandler();
-            MobileServiceClient service = new MobileServiceClient("http://www.test.com", "secret...", hijack);
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            UrlTestHelper urlTestHelper = new UrlTestHelper(service);
+            
             hijack.SetResponseContent("{\"id\":3}");
 
             IntType expected = await service.InvokeApiAsync<IntType>("calculator/add?a=1&b=2");
 
-            Assert.AreEqual(hijack.Request.RequestUri.LocalPath, "/api/calculator/add");
+            Assert.AreEqual(hijack.Request.RequestUri.LocalPath, urlTestHelper.GetApiUriPath("calculator/add"));
             Assert.Contains(hijack.Request.RequestUri.Query, "a=1&b=2");
             Assert.AreEqual(3, expected.Id);
         }
@@ -343,11 +346,12 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":3}");
-            MobileServiceClient service = new MobileServiceClient("http://www.test.com", "secret...", hijack);
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            UrlTestHelper urlTestHelper = new UrlTestHelper(service);
 
             JToken expected = await service.InvokeApiAsync("calculator/add?a=1&b=2");
 
-            Assert.AreEqual(hijack.Request.RequestUri.LocalPath, "/api/calculator/add");
+            Assert.AreEqual(hijack.Request.RequestUri.LocalPath, urlTestHelper.GetApiUriPath("calculator/add"));
             Assert.Contains(hijack.Request.RequestUri.Query, "?a=1&b=2");
             Assert.AreEqual(3, (int)expected["id"]);
         }
@@ -357,7 +361,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":3}");
-            MobileServiceClient service = new MobileServiceClient("http://www.test.com", "secret...", hijack);
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
 
             var body = "{\"test\" : \"one\"}";
             IntType expected = await service.InvokeApiAsync<string, IntType>("calculator/add", body);
@@ -369,7 +373,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":3}");
-            MobileServiceClient service = new MobileServiceClient("http://www.test.com", "secret...", hijack);
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
 
             JObject body = JToken.Parse("{\"test\":\"one\"}") as JObject;
             JToken expected = await service.InvokeApiAsync("calculator/add", body);
@@ -381,7 +385,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":3}");
-            MobileServiceClient service = new MobileServiceClient("http://www.test.com", "secret...", hijack);
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
             hijack.OnSendingRequest = async request =>
             {
                 string content = await request.Content.ReadAsStringAsync();
@@ -398,7 +402,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":3}");
-            MobileServiceClient service = new MobileServiceClient("http://www.test.com", "secret...", hijack);
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
             hijack.OnSendingRequest = async request =>
             {
                 string content = await request.Content.ReadAsStringAsync();
@@ -415,12 +419,14 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         public async Task InvokeCustomAPIGet()
         {
             TestHttpHandler hijack = new TestHttpHandler();
-            MobileServiceClient service = new MobileServiceClient("http://www.test.com", "secret...", hijack);
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            UrlTestHelper urlTestHelper = new UrlTestHelper(service);
+            
             hijack.SetResponseContent("{\"id\":3}");
 
             IntType expected = await service.InvokeApiAsync<IntType>("calculator/add?a=1&b=2", HttpMethod.Get, null);
 
-            Assert.AreEqual(hijack.Request.RequestUri.LocalPath, "/api/calculator/add");
+            Assert.AreEqual(hijack.Request.RequestUri.LocalPath, urlTestHelper.GetApiUriPath("calculator/add"));
             Assert.Contains(hijack.Request.RequestUri.Query, "a=1&b=2");
             Assert.AreEqual(3, expected.Id);
         }
@@ -429,7 +435,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         public async Task InvokeApiAsync_DoesNotAppendApiPath_IfApiStartsWithSlash()
         {
             TestHttpHandler hijack = new TestHttpHandler();
-            var service = new MobileServiceClient("http://www.test.com", "secret...", hijack);
+            var service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
             hijack.SetResponseContent("{\"id\":3}");
 
             await service.InvokeApiAsync<IntType>("/calculator/add?a=1&b=2", HttpMethod.Get, null);
@@ -443,11 +449,12 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":3}");
-            MobileServiceClient service = new MobileServiceClient("http://www.test.com", "secret...", hijack);
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            UrlTestHelper urlTestHelper = new UrlTestHelper(service);
 
             JToken expected = await service.InvokeApiAsync("calculator/add?a=1&b=2", HttpMethod.Get, null);
 
-            Assert.AreEqual(hijack.Request.RequestUri.LocalPath, "/api/calculator/add");
+            Assert.AreEqual(hijack.Request.RequestUri.LocalPath, urlTestHelper.GetApiUriPath("calculator/add"));
             Assert.Contains(hijack.Request.RequestUri.Query, "?a=1&b=2");
             Assert.AreEqual(3, (int)expected["id"]);
         }
@@ -457,7 +464,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":3}");
-            MobileServiceClient service = new MobileServiceClient("http://www.test.com", "secret...", hijack);
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
 
             var myParams = new Dictionary<string, string>() { { "a", "1" }, { "b", "2" } };
             IntType expected = await service.InvokeApiAsync<IntType>("calculator/add", HttpMethod.Get, myParams);
@@ -470,7 +477,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":3}");
-            MobileServiceClient service = new MobileServiceClient("http://www.test.com", "secret...", hijack);
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
 
             var myParams = new Dictionary<string, string>() { { "a", "1" }, { "b", "2" } };
             JToken expected = await service.InvokeApiAsync("calculator/add", HttpMethod.Get, myParams);
@@ -483,7 +490,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":3}");
-            MobileServiceClient service = new MobileServiceClient("http://www.test.com", "secret...", hijack);
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
 
             var myParams = new Dictionary<string, string>() { { "$select", "one,two" }, { "$take", "1" } };
             IntType expected = await service.InvokeApiAsync<IntType>("calculator/add", HttpMethod.Get, myParams);
@@ -496,7 +503,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":3}");
-            MobileServiceClient service = new MobileServiceClient("http://www.test.com", "secret...", hijack);
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
 
             var myParams = new Dictionary<string, string>() { { "$select", "one,two" } };
             JToken expected = await service.InvokeApiAsync("calculator/add", HttpMethod.Get, myParams);
@@ -509,7 +516,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":3}");
-            MobileServiceClient service = new MobileServiceClient("http://www.test.com", "secret...", hijack);
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
 
             var myParams = new Dictionary<string, string>() { { "a", "1" }, { "b", "2" } };
             var body = "{\"test\" : \"one\"}";
@@ -524,7 +531,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         {
             TestHttpHandler hijack = new TestHttpHandler();
             hijack.SetResponseContent("{\"id\":3}");
-            MobileServiceClient service = new MobileServiceClient("http://www.test.com", "secret...", hijack);
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
 
             var myParams = new Dictionary<string, string>() { { "a", "1" }, { "b", "2" } };
             JObject body = JToken.Parse("{\"test\":\"one\"}") as JObject;
@@ -542,10 +549,11 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             hijack.Response = new HttpResponseMessage(System.Net.HttpStatusCode.Accepted);
             hijack.Response.Content = new StringContent("{\"id\":\"2\"}", Encoding.UTF8, "application/json");
 
-            MobileServiceClient service = new MobileServiceClient("http://www.test.com", "secret...", hijack);
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            UrlTestHelper urlTestHelper = new UrlTestHelper(service);
             HttpResponseMessage response = await service.InvokeApiAsync("calculator/add?a=1&b=2", null, HttpMethod.Post, null, null);
 
-            Assert.AreEqual(hijack.Request.RequestUri.LocalPath, "/api/calculator/add");
+            Assert.AreEqual(hijack.Request.RequestUri.LocalPath, urlTestHelper.GetApiUriPath("calculator/add"));
             Assert.Contains(hijack.Request.RequestUri.Query, "?a=1&b=2");
             Assert.Contains(response.Content.ReadAsStringAsync().Result, "{\"id\":\"2\"}");
         }
@@ -559,10 +567,12 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             hijack.Response.Content = new StringContent("{\"id\":\"2\"}", Encoding.UTF8, "application/json");
             var myParams = new Dictionary<string, string>() { { "a", "1" }, { "b", "2" } };
 
-            MobileServiceClient service = new MobileServiceClient("http://www.test.com", "secret...", hijack);
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            UrlTestHelper urlTestHelper = new UrlTestHelper(service);
+            
             HttpResponseMessage response = await service.InvokeApiAsync("calculator/add", null, HttpMethod.Post, null, myParams);
 
-            Assert.AreEqual(hijack.Request.RequestUri.LocalPath, "/api/calculator/add");
+            Assert.AreEqual(hijack.Request.RequestUri.LocalPath, urlTestHelper.GetApiUriPath("calculator/add"));
             Assert.Contains(hijack.Request.RequestUri.Query, "?a=1&b=2");
             Assert.IsNull(hijack.Request.Content);
             Assert.Contains(response.Content.ReadAsStringAsync().Result, "{\"id\":\"2\"}");
@@ -578,7 +588,9 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             var myParams = new Dictionary<string, string>() { { "a", "1" }, { "b", "2" } };
 
             HttpContent content = new StringContent("{\"test\" : \"one\"}", Encoding.UTF8, "application/json");
-            MobileServiceClient service = new MobileServiceClient("http://www.test.com", "secret...", hijack);
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            UrlTestHelper urlTestHelper = new UrlTestHelper(service);
+
             var myHeaders = new Dictionary<string, string>() { { "x-zumo-test", "test" } };
 
             HttpResponseMessage response = await service.InvokeApiAsync("calculator/add", content, HttpMethod.Post, myHeaders, myParams);
@@ -586,7 +598,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             Assert.AreEqual(myHeaders.Count, 1); // my headers should not be modified
             Assert.AreEqual(myHeaders["x-zumo-test"], "test");
 
-            Assert.AreEqual(hijack.Request.RequestUri.LocalPath, "/api/calculator/add");
+            Assert.AreEqual(hijack.Request.RequestUri.LocalPath, urlTestHelper.GetApiUriPath("calculator/add"));
             Assert.AreEqual(hijack.Request.Headers.GetValues("x-zumo-test").First(), "test");
             Assert.IsNotNull(hijack.Request.Content);
             Assert.Contains(hijack.Request.RequestUri.Query, "?a=1&b=2");
@@ -601,10 +613,11 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             hijack.Response = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
             hijack.Response.Content = new StringContent("", Encoding.UTF8, "application/json");
 
-            MobileServiceClient service = new MobileServiceClient("http://www.test.com", "secret...", hijack);
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            UrlTestHelper urlTestHelper = new UrlTestHelper(service);
 
             JToken expected = await service.InvokeApiAsync("testapi");
-            Assert.AreEqual(hijack.Request.RequestUri.LocalPath, "/api/testapi");
+            Assert.AreEqual(hijack.Request.RequestUri.LocalPath, urlTestHelper.GetApiUriPath("testapi"));
             Assert.AreEqual(expected, null);
         }
 
@@ -616,10 +629,11 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             hijack.Response = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
             hijack.Response.Content = null;
 
-            MobileServiceClient service = new MobileServiceClient("http://www.test.com", "secret...", hijack);
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
+            UrlTestHelper urlTestHelper = new UrlTestHelper(service);
 
             IntType expected = await service.InvokeApiAsync<IntType>("testapi");
-            Assert.AreEqual(hijack.Request.RequestUri.LocalPath, "/api/testapi");
+            Assert.AreEqual(hijack.Request.RequestUri.LocalPath, urlTestHelper.GetApiUriPath("testapi"));
             Assert.AreEqual(expected, null);
         }
 
@@ -631,7 +645,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             hijack.Response = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest);
             hijack.Response.Content = new StringContent("{ error: \"message\"}", Encoding.UTF8, "application/json");
 
-            MobileServiceClient service = new MobileServiceClient("http://www.test.com", "secret...", hijack);
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
 
             try
             {
@@ -652,7 +666,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             hijack.Response = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest);
             hijack.Response.Content = new StringContent("\"message\"", Encoding.UTF8, "application/json");
 
-            MobileServiceClient service = new MobileServiceClient("http://www.test.com", "secret...", hijack);
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
 
             try
             {
@@ -673,7 +687,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             hijack.Response = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest);
             hijack.Response.Content = new StringContent("message", Encoding.UTF8, "text/html");
 
-            MobileServiceClient service = new MobileServiceClient("http://www.test.com", "secret...", hijack);
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
 
             try
             {
@@ -695,7 +709,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             hijack.Response.Content = new StringContent("message", Encoding.UTF8, null);
             hijack.Response.Content.Headers.ContentType = null;
 
-            MobileServiceClient service = new MobileServiceClient("http://www.test.com", "secret...", hijack);
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
 
             try
             {
@@ -718,7 +732,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 return Task.FromResult(request);
             };
 
-            MobileServiceClient service = new MobileServiceClient("http://www.test.com", "secret...", hijack);
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
 
             hijack.SetResponseContent("{\"hello\":\"world\"}");
             await service.InvokeApiAsync("apiName");
@@ -750,7 +764,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 return Task.FromResult(request);
             };
 
-            MobileServiceClient service = new MobileServiceClient("http://www.test.com", "secret...", hijack);
+            MobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
 
             hijack.SetResponseContent("{\"id\":3}");
             await service.InvokeApiAsync<IntType>("apiName");
@@ -845,7 +859,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 return Task.FromResult(request);
             };
 
-            IMobileServiceClient service = new MobileServiceClient("http://www.test.com", "secret...", hijack);
+            IMobileServiceClient service = new MobileServiceClient(UrlTestHelper.DefaultMobileApp, "secret...", hijack);
 
             hijack.SetResponseContent("{\"id\":3}");
             await operation(service);

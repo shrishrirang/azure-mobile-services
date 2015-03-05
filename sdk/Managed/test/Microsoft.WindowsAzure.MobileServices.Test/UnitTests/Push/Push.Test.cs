@@ -17,9 +17,10 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
     [Tag("push")]
     [Tag("notNetFramework")]
     public class PushTest : TestBase
-    {        
+    {
+        /* ttodoshrirs
         const string DefaultChannelUri = "http://channelUri.com/a b";
-        const string DefaultServiceUri = "http://www.test.com";
+        const string DefaultServiceUri = Shri.DefaultMobileApp;
         const string RegistrationsPath = "/push/registrations";
         const string DefaultRegistrationId = "7313155627197174428-6522078074300559092-1";
 
@@ -312,5 +313,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
 
             return handler;
         }
+         *     */
+
     }
 }

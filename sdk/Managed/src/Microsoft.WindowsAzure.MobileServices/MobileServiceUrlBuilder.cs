@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 
 namespace Microsoft.WindowsAzure.MobileServices
 {
@@ -23,6 +24,11 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// A constant variable that defines the character '/'.
         /// </summary>
         private const char Slash = '/';
+
+        /// <summary>
+        /// Suffix of the default Azure Mobile Application code site.
+        /// </summary>
+        private const string DefaultMobileAppCodeSiteSuffix = ".code";
 
         /// <summary>
         /// Converts a dictionary of string key-value pairs into a URI query string.
@@ -156,10 +162,9 @@ namespace Microsoft.WindowsAzure.MobileServices
 
             if (!mobileAppUri.IsAbsoluteUri)
             {
-                throw new ArgumentException(
+                throw new FormatException(
                     string.Format(CultureInfo.InvariantCulture,
-                        "URI {0} is not an absolute URI. An absolute URI is expected.", mobileAppUri),
-                    "mobileAppUri");
+                        "URI {0} is not an absolute URI. An absolute URI is expected.", mobileAppUri));
             }
 
             return new Uri(GetGatewayUri(mobileAppUri), AddTrailingSlash(mobileAppCodeSiteName));
@@ -186,9 +191,9 @@ namespace Microsoft.WindowsAzure.MobileServices
 
             if (!mobileAppUri.IsAbsoluteUri)
             {
-                throw new ArgumentException(
-                    string.Format(CultureInfo.InvariantCulture, "URI {0} is not an absolute URI. An absolute URI is expected.", mobileAppUri),
-                    "mobileAppUri");
+                throw new FormatException(
+                    string.Format(CultureInfo.InvariantCulture,
+                        "URI {0} is not an absolute URI. An absolute URI is expected.", mobileAppUri));
             }
 
             return new Uri(mobileAppUri.Scheme + SchemeDelimiter + mobileAppUri.Host + Slash);
@@ -220,6 +225,49 @@ namespace Microsoft.WindowsAzure.MobileServices
             }
 
             return uri;
+        }
+
+        /// <summary>
+        /// Gets the URI of the default Azure Mobile Application Code site.
+        /// </summary>
+        /// <param name="mobileAppUri">
+        /// URI of the Azure Mobile Application.
+        /// </param>
+        /// <returns>
+        /// URI of the default Azure Mobile Application Code site
+        /// </returns>
+        public static Uri GetDefaultMobileAppCodeUri(Uri mobileAppUri)
+        {
+            if (mobileAppUri == null)
+            {
+                throw new ArgumentNullException("mobileAppUri");
+            }
+
+            var gatewayUri = GetGatewayUri(mobileAppUri);
+            var mobileAppSiteName = GetMobileAppName(mobileAppUri) + DefaultMobileAppCodeSiteSuffix;
+
+            return new Uri(gatewayUri, AddTrailingSlash(mobileAppSiteName));
+        }
+
+        /// <summary>
+        /// Gets the name of the Azure Mobile Application from it's URI.
+        /// </summary>
+        /// <param name="mobileAppUri">
+        /// URI of the Azure Mobile Application.
+        /// </param>
+        /// <returns>
+        /// Name of the Azure Mobile Application.
+        /// </returns>
+        private static string GetMobileAppName(Uri mobileAppUri)
+        {
+            // Expected a mobile app URI of the form: http://gateway/mobileappname
+            // Such an URI will have 2 segments: "/" and "<mobileappname>"
+            if (!mobileAppUri.IsAbsoluteUri || mobileAppUri.Segments.Length != 2)
+            {
+                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "{0} is not a valid Azure Mobile Application URI", mobileAppUri));
+            }
+
+            return mobileAppUri.Segments[1].TrimEnd(Slash);
         }
     }
 }

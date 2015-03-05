@@ -19,7 +19,7 @@
 //    public class PushHttpClientTests : TestBase
 //    {
 //        const string DefaultChannelUri = "http://channelUri.com/a b";
-//        const string DefaultServiceUri = "http://www.test.com";
+//        const string DefaultServiceUri = Shri.DefaultMobileApp;
 //        const string RegistrationsPath = "/push/registrations";
 //        const string DefaultRegistrationId = "7313155627197174428-6522078074300559092-1";
         
