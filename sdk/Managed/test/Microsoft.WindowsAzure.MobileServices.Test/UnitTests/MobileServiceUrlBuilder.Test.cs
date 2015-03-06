@@ -102,8 +102,6 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             Throws<ArgumentNullException>(() => MobileServiceUrlBuilder.GetMobileAppCodeUri(mobileAppUri, mobileAppCodeSiteName: null));
             Throws<ArgumentException>(() => MobileServiceUrlBuilder.GetMobileAppCodeUri(mobileAppUri, mobileAppCodeSiteName: ""));
             Throws<ArgumentException>(() => MobileServiceUrlBuilder.GetMobileAppCodeUri(mobileAppUri, mobileAppCodeSiteName: "    "));
-
-            Throws<ArgumentNullException>(() => MobileServiceUrlBuilder.GetMobileAppCodeUri(mobileAppUri: null, mobileAppCodeSiteName: DefaultAppCodeSiteName));
         }
 
         [TestMethod]
