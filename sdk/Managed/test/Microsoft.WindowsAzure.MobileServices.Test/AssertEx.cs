@@ -53,21 +53,6 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 Assert.AreEqual(actualUri.AbsolutePath, expectedUri.AbsolutePath);
                 // xamarin.ios encoding of query string is different than other platforms so normalizing them for comparison
                 Assert.AreEqual(Uri.UnescapeDataString(actualUri.Query), Uri.UnescapeDataString(expectedUri.Query));
-                //ttodoshrirs - remove the foll block. it is only for debugging
-                {
-                    if (actualUri.Host != expectedUri.Host)
-                    {
-                        
-                    }
-                    if (actualUri.AbsolutePath != expectedUri.AbsolutePath)
-                    {
-                        
-                    }
-                    if (actualUri.AbsolutePath != expectedUri.AbsolutePath)
-                    {
-                        
-                    }
-                }
             }
         }
     }

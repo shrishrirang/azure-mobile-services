@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.WindowsAzure.MobileServices.Test.UnitTests;
 using Microsoft.WindowsAzure.MobileServices.TestFramework;
 
 using Newtonsoft.Json;
@@ -18,10 +19,9 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
     [Tag("notNetFramework")]
     public class PushTest : TestBase
     {
-        /* ttodoshrirs
         const string DefaultChannelUri = "http://channelUri.com/a b";
-        const string DefaultServiceUri = Shri.DefaultMobileApp;
-        const string RegistrationsPath = "/push/registrations";
+        const string DefaultServiceUri = MobileAppUriValidator.DummyMobileApp;
+        const string RegistrationsPath = "push/registrations";
         const string DefaultRegistrationId = "7313155627197174428-6522078074300559092-1";
 
         readonly IPushUtility pushUtility;
@@ -46,7 +46,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             var expectedUri = this.GetExpectedListUri();
             var hijack = CreateTestHttpHandler(expectedUri, HttpMethod.Get, "[]");
             
-            MobileServiceClient mobileClient = new MobileServiceClient(DefaultServiceUri, null, hijack);
+            MobileServiceClient mobileClient = new MobileServiceClient(DefaultServiceUri, hijack);
             var pushHttpClient = new PushHttpClient(mobileClient);
 
             var registrations = await pushHttpClient.ListRegistrationsAsync(DefaultChannelUri);
@@ -61,7 +61,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             var expectedUri = this.GetExpectedListUri();
             var hijack = CreateTestHttpHandler(expectedUri, HttpMethod.Get, this.pushTestUtility.GetListNativeRegistrationResponse());
 
-            MobileServiceClient mobileClient = new MobileServiceClient(DefaultServiceUri, null, hijack);
+            MobileServiceClient mobileClient = new MobileServiceClient(DefaultServiceUri, hijack);
             var pushHttpClient = new PushHttpClient(mobileClient);
 
             var registrations = await pushHttpClient.ListRegistrationsAsync(DefaultChannelUri);
@@ -88,7 +88,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             var expectedUri = this.GetExpectedListUri();
             var hijack = CreateTestHttpHandler(expectedUri, HttpMethod.Get, this.pushTestUtility.GetListTemplateRegistrationResponse());
 
-            MobileServiceClient mobileClient = new MobileServiceClient(DefaultServiceUri, null, hijack);
+            MobileServiceClient mobileClient = new MobileServiceClient(DefaultServiceUri, hijack);
             var pushHttpClient = new PushHttpClient(mobileClient);
 
             var registrations = await pushHttpClient.ListRegistrationsAsync(DefaultChannelUri);
@@ -121,7 +121,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             var expectedUri = this.GetExpectedListUri();
             var hijack = CreateTestHttpHandler(expectedUri, HttpMethod.Get, this.pushTestUtility.GetListMixedRegistrationResponse());
 
-            MobileServiceClient mobileClient = new MobileServiceClient(DefaultServiceUri, null, hijack);
+            MobileServiceClient mobileClient = new MobileServiceClient(DefaultServiceUri, hijack);
             var pushHttpClient = new PushHttpClient(mobileClient);
 
             var registrations = await pushHttpClient.ListRegistrationsAsync(DefaultChannelUri);
@@ -159,7 +159,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             var expectedUri = this.GetExpectedListUri();
             var hijack = CreateTestHttpHandler(expectedUri, HttpMethod.Get, "\"Server threw 500\"", HttpStatusCode.InternalServerError);
 
-            MobileServiceClient mobileClient = new MobileServiceClient(DefaultServiceUri, null, hijack);
+            MobileServiceClient mobileClient = new MobileServiceClient(DefaultServiceUri, hijack);
             var pushHttpClient = new PushHttpClient(mobileClient);
 
             var exception = await AssertEx.Throws<MobileServiceInvalidOperationException>(
@@ -173,7 +173,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             var expectedUri = this.GetExpectedListUri();
             var hijack = CreateTestHttpHandler(expectedUri, HttpMethod.Get, "{\"error\":\"Server threw 500\"}", HttpStatusCode.InternalServerError);
 
-            MobileServiceClient mobileClient = new MobileServiceClient(DefaultServiceUri, null, hijack);
+            MobileServiceClient mobileClient = new MobileServiceClient(DefaultServiceUri, hijack);
             var pushHttpClient = new PushHttpClient(mobileClient);
 
             var exception = await AssertEx.Throws<MobileServiceInvalidOperationException>
@@ -181,7 +181,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             Assert.AreEqual(exception.Message, "Server threw 500");
         }
         
-        const string CreatePath = "/push/registrationids";
+        const string CreatePath = "push/registrationids";
         static readonly Uri LocationUri = new Uri(string.Format("{0}{1}/{2}", DefaultServiceUri, RegistrationsPath, DefaultRegistrationId));
 
         [AsyncTestMethod]
@@ -190,7 +190,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             var expectedUri = string.Format("{0}{1}", DefaultServiceUri, CreatePath);
             var hijack = CreateTestHttpHandler(expectedUri, HttpMethod.Post, null, HttpStatusCode.Created, LocationUri);
 
-            MobileServiceClient mobileClient = new MobileServiceClient(DefaultServiceUri, null, hijack);
+            MobileServiceClient mobileClient = new MobileServiceClient(DefaultServiceUri, hijack);
             var pushHttpClient = new PushHttpClient(mobileClient);
 
             var registrationId = await pushHttpClient.CreateRegistrationIdAsync();
@@ -204,7 +204,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             var expectedUri = string.Format("{0}{1}", DefaultServiceUri, CreatePath);
             var hijack = CreateTestHttpHandler(expectedUri, HttpMethod.Post, "\"Server threw 500\"", HttpStatusCode.InternalServerError, LocationUri);
 
-            MobileServiceClient mobileClient = new MobileServiceClient(DefaultServiceUri, null, hijack);
+            MobileServiceClient mobileClient = new MobileServiceClient(DefaultServiceUri, hijack);
             var pushHttpClient = new PushHttpClient(mobileClient);
         
             var exception = await AssertEx.Throws<MobileServiceInvalidOperationException>(() => pushHttpClient.CreateRegistrationIdAsync());
@@ -217,7 +217,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             var expectedUri = string.Format("{0}{1}/{2}", DefaultServiceUri, RegistrationsPath, DefaultRegistrationId);
             var hijack = CreateTestHttpHandler(expectedUri, HttpMethod.Delete, null, HttpStatusCode.OK);
 
-            MobileServiceClient mobileClient = new MobileServiceClient(DefaultServiceUri, null, hijack);
+            MobileServiceClient mobileClient = new MobileServiceClient(DefaultServiceUri, hijack);
             var pushHttpClient = new PushHttpClient(mobileClient);
 
             // Because Unregistrer returns nothing, the only test we can perform is that the Http Method and body are correct
@@ -231,7 +231,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             var expectedUri = string.Format("{0}{1}/{2}", DefaultServiceUri, RegistrationsPath, DefaultRegistrationId);
             var hijack = CreateTestHttpHandler(expectedUri, HttpMethod.Delete, "\"Server threw 500\"", HttpStatusCode.InternalServerError);
 
-            MobileServiceClient mobileClient = new MobileServiceClient(DefaultServiceUri, null, hijack);
+            MobileServiceClient mobileClient = new MobileServiceClient(DefaultServiceUri, hijack);
             var pushHttpClient = new PushHttpClient(mobileClient);
 
             var exception = await AssertEx.Throws<MobileServiceInvalidOperationException>(
@@ -251,7 +251,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             // We verify that the request content is correct and that the method is correct.
             var hijack = CreateTestHttpHandler(expectedUri, HttpMethod.Put, null, HttpStatusCode.NoContent, expectedRequestContent: jsonRegistration);
 
-            MobileServiceClient mobileClient = new MobileServiceClient(DefaultServiceUri, null, hijack);
+            MobileServiceClient mobileClient = new MobileServiceClient(DefaultServiceUri, hijack);
             var pushHttpClient = new PushHttpClient(mobileClient);
 
             await pushHttpClient.CreateOrUpdateRegistrationAsync(registration);
@@ -267,7 +267,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             string jsonRegistration = JsonConvert.SerializeObject(registration);
             var hijack = CreateTestHttpHandler(expectedUri, HttpMethod.Put, "\"Server threw 500\"", HttpStatusCode.InternalServerError, expectedRequestContent: jsonRegistration);
 
-            MobileServiceClient mobileClient = new MobileServiceClient(DefaultServiceUri, null, hijack);
+            MobileServiceClient mobileClient = new MobileServiceClient(DefaultServiceUri, hijack);
             var pushHttpClient = new PushHttpClient(mobileClient);
 
             var exception = await AssertEx.Throws<MobileServiceInvalidOperationException>(() => pushHttpClient.CreateOrUpdateRegistrationAsync(registration));
@@ -313,7 +313,5 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
 
             return handler;
         }
-         *     */
-
     }
 }

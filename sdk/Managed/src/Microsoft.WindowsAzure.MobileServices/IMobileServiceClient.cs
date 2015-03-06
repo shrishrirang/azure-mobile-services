@@ -28,11 +28,6 @@ namespace Microsoft.WindowsAzure.MobileServices
         Uri MobileAppUri { get; }
 
         /// <summary>
-        /// Absolute URI of the Microsoft Azure Mobile Application code site. This can point to a deployment on Azure or elsewhere.
-        /// </summary>
-        Uri MobileAppCodeUri { get; }
-
-        /// <summary>
         /// Absolute URI of the resource group's gateway.
         /// </summary>
         Uri GatewayUri { get; }

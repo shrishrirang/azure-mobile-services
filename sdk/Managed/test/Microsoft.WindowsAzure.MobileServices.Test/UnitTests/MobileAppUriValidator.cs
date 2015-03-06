@@ -9,14 +9,19 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.UnitTests
     /// <summary>
     /// Helper class for performing Mobile App URI validations.
     /// </summary>
-    internal class MobileAppUriValidator
+    public class MobileAppUriValidator
     {
         #region Constants/Fields
 
         /// <summary>
         /// URI for a dummy mobile app.
         /// </summary>
-        public const string DefaultMobileApp = "http://www.testgateway.com/testmobileapp/";
+        public const string DummyMobileApp = "http://www.testgateway.com/testmobileapp/";
+
+        /// <summary>
+        /// URI for a dummy mobile app.
+        /// </summary>
+        public const string DummyGateway = "http://www.testgateway.com/";
 
         /// <summary>
         /// Table component in a valid table URI.
@@ -56,7 +61,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.UnitTests
         /// </summary>
         public string TableBaseUri
         {
-            get { return _mobileServiceClient.MobileAppCodeUri.AbsoluteUri + TableComponentInUri; }
+            get { return _mobileServiceClient.MobileAppUri.AbsoluteUri + TableComponentInUri; }
         }
 
         /// <summary>
@@ -64,7 +69,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.UnitTests
         /// </summary>
         public string ApiBaseUri
         {
-            get { return _mobileServiceClient.MobileAppCodeUri.AbsoluteUri + ApiComponentInUri; }
+            get { return _mobileServiceClient.MobileAppUri.AbsoluteUri + ApiComponentInUri; }
         }
 
         #endregion

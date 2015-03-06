@@ -21,7 +21,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.UnitTests
 
         private void TestInitialize()
         {
-            string appUrl = MobileAppUriValidator.DefaultMobileApp;
+            string appUrl = MobileAppUriValidator.DummyMobileApp;
             string appKey = "secret...";
             this.hijack = new TestHttpHandler();
             this.hijack.SetResponseContent(String.Empty);
@@ -29,7 +29,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.UnitTests
             var originalFactory = MobileServiceHttpClient.DefaultHandlerFactory;
             MobileServiceHttpClient.DefaultHandlerFactory = () => this.hijack;
 
-            this.client = new MobileServiceClient(appUrl, mobileAppCodeSiteNameOrUrl:null, applicationKey:appKey, handlers: hijack);
+            this.client = new MobileServiceClient(appUrl, MobileAppUriValidator.DummyGateway, appKey, hijack);
 
             MobileServiceHttpClient.DefaultHandlerFactory = originalFactory;
         }

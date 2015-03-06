@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.WindowsAzure.MobileServices.Test.UnitTests;
+using Microsoft.WindowsAzure.MobileServices.Test.UnitTests.Common;
 using Microsoft.WindowsAzure.MobileServices.TestFramework;
 using Microsoft.WindowsAzure.MobileServices.Threading;
 
@@ -15,19 +16,9 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
     public class MobileServiceUrlBuilderTests : TestBase
     {
         /// <summary>
-        /// Application code site name for a valid Mobile Application.
-        /// </summary>
-        private const string DefaultAppCodeSiteName = "testmobileapp.code";
-
-        /// <summary>
         /// URI of a valid Mobile Application.
         /// </summary>
         private const string DefaultMobileApp = "http://www.testgateway.com/testmobileapp/";
-
-        /// <summary>
-        /// URI of the code site for a valid Mobile Application.
-        /// </summary>
-        private const string DefaultMobileAppCodeSite = "http://www.testgateway.com/testmobileapp.code/";
 
         /// <summary>
         /// URI of the gateway of a valid Mobile Application.
@@ -64,46 +55,6 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             Assert.AreEqual("somePath", MobileServiceUrlBuilder.CombinePathAndQuery("somePath", ""));
         }
 
-        /// <summary>
-        /// Tests <see cref="MobileServiceUrlBuilder.GetMobileAppCodeUri"/>
-        /// </summary>
-        [TestMethod]
-        public void GetMobileAppCodeUriTest_ValidUris()
-        {
-            Assert.AreEqual(
-                MobileServiceUrlBuilder.GetMobileAppCodeUri(new Uri(RemoveTrailingSlash(DefaultMobileApp)), DefaultAppCodeSiteName),
-                DefaultMobileAppCodeSite);
-
-            Assert.AreEqual(
-                MobileServiceUrlBuilder.GetMobileAppCodeUri(new Uri(DefaultMobileApp), DefaultAppCodeSiteName),
-                DefaultMobileAppCodeSite);
-        }
-
-        /// <summary>
-        /// Tests <see cref="MobileServiceUrlBuilder.GetMobileAppCodeUri"/>
-        /// </summary>
-        [TestMethod]
-        public void GetMobileAppCodeUriTest_MobileAppUriInvalid()
-        {
-            Throws<ArgumentNullException>(() => MobileServiceUrlBuilder.GetMobileAppCodeUri(mobileAppUri: null, mobileAppCodeSiteName: DefaultAppCodeSiteName));
-
-            var invalidMobileAppUri = new Uri("testmobileapp/", UriKind.Relative);
-            Throws<FormatException>(() => MobileServiceUrlBuilder.GetMobileAppCodeUri(invalidMobileAppUri, DefaultAppCodeSiteName));
-        }
-
-        /// <summary>
-        /// Tests <see cref="MobileServiceUrlBuilder.GetMobileAppCodeUri"/>
-        /// </summary>
-        [TestMethod]
-        public void GetMobileAppCodeUriTest_MobileAppCodeSiteNameInvalid()
-        {
-            var mobileAppUri = new Uri(DefaultMobileApp);
-
-            Throws<ArgumentNullException>(() => MobileServiceUrlBuilder.GetMobileAppCodeUri(mobileAppUri, mobileAppCodeSiteName: null));
-            Throws<ArgumentException>(() => MobileServiceUrlBuilder.GetMobileAppCodeUri(mobileAppUri, mobileAppCodeSiteName: ""));
-            Throws<ArgumentException>(() => MobileServiceUrlBuilder.GetMobileAppCodeUri(mobileAppUri, mobileAppCodeSiteName: "    "));
-        }
-
         [TestMethod]
         public void GetGatewayUri_ValidUris()
         {
@@ -112,7 +63,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
                 DefaultGateway);
 
             Assert.AreEqual(
-                MobileServiceUrlBuilder.GetGatewayUri(new Uri(RemoveTrailingSlash(DefaultMobileApp))),
+                MobileServiceUrlBuilder.GetGatewayUri(new Uri(UriUtilities.RemoveTrailingSlash(DefaultMobileApp))),
                 DefaultGateway);
         }
 
@@ -123,27 +74,6 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
 
             var invalidMobileAppUri = new Uri("abc/", UriKind.Relative);
             Throws<FormatException>(() => MobileServiceUrlBuilder.GetGatewayUri(invalidMobileAppUri));
-        }
-
-        [TestMethod]
-        public void GetDefaultMobileAppCodeUri_ValidUris()
-        {
-            Assert.AreEqual(
-                MobileServiceUrlBuilder.GetDefaultMobileAppCodeUri(new Uri(DefaultMobileApp)),
-                DefaultMobileAppCodeSite);
-
-            Assert.AreEqual(
-                MobileServiceUrlBuilder.GetDefaultMobileAppCodeUri(new Uri(RemoveTrailingSlash(DefaultMobileApp))),
-                DefaultMobileAppCodeSite);
-        }
-
-        [TestMethod]
-        public void GetDefaultMobileAppCodeUri_InvalidUris()
-        {
-            Throws<ArgumentNullException>(() => MobileServiceUrlBuilder.GetDefaultMobileAppCodeUri(null));
-
-            var invalidMobileAppUri = new Uri("abc/", UriKind.Relative);
-            Throws<FormatException>(() => MobileServiceUrlBuilder.GetDefaultMobileAppCodeUri(invalidMobileAppUri));
         }
 
         [TestMethod]
@@ -159,9 +89,5 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             Assert.AreEqual(MobileServiceUrlBuilder.AddTrailingSlash("http://abc/def/     "), "http://abc/def/     /");
         }
 
-        private static string RemoveTrailingSlash(string uri)
-        {
-            return uri.TrimEnd(Slash);
-        }
     }
 }

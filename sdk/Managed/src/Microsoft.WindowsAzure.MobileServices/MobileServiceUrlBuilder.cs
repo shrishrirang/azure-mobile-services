@@ -26,11 +26,6 @@ namespace Microsoft.WindowsAzure.MobileServices
         private const char Slash = '/';
 
         /// <summary>
-        /// Suffix of the default Azure Mobile Application code site.
-        /// </summary>
-        private const string DefaultMobileAppCodeSiteSuffix = ".code";
-
-        /// <summary>
         /// Converts a dictionary of string key-value pairs into a URI query string.
         /// </summary>
         /// <remarks>
@@ -137,50 +132,6 @@ namespace Microsoft.WindowsAzure.MobileServices
         }
 
         /// <summary>
-        /// Gets the URI of the Azure Mobile Application code.
-        /// This assumes that <paramref name="mobileAppUri"/> is a valid Azure Mobile Application URI and that <see cref="mobileAppCodeSiteName"/>
-        /// is a valid Azure Mobile Application code site name in the resource group containing <see cref="mobileAppUri"/>.
-        /// </summary>
-        /// <param name="mobileAppUri">
-        /// Absolute URI of the Azure Mobile Application. Refer <see cref="IMobileServiceClient.MobileAppUri"/> for more details.
-        /// </param>
-        /// <param name="mobileAppCodeSiteName">
-        /// The name of the Azure Mobile Application code site.
-        /// </param>
-        /// <returns>
-        /// Absolute URI of the Azure Mobile Application code.
-        /// </returns>
-        /// <remarks>
-        /// This is just a helper method and doesn't validate the correctness of <paramref name="mobileAppUri"/> and <paramref name="mobileAppCodeSiteName"/>.
-        /// </remarks>
-        public static Uri GetMobileAppCodeUri(Uri mobileAppUri, string mobileAppCodeSiteName)
-        {
-            if (mobileAppUri == null)
-            {
-                throw new ArgumentNullException("mobileAppUri");
-            }
-
-            if (mobileAppCodeSiteName == null)
-            {
-                throw new ArgumentNullException("mobileAppCodeSiteName");
-            }
-
-            if (string.IsNullOrEmpty(mobileAppCodeSiteName.Trim()))
-            {
-                throw new ArgumentException("Expected a non empty string", "mobileAppCodeSiteName");
-            }
-
-            if (!mobileAppUri.IsAbsoluteUri)
-            {
-                throw new FormatException(
-                    string.Format(CultureInfo.InvariantCulture,
-                        "URI {0} is not an absolute URI. An absolute URI is expected.", mobileAppUri));
-            }
-
-            return new Uri(GetGatewayUri(mobileAppUri), AddTrailingSlash(mobileAppCodeSiteName));
-        }
-
-        /// <summary>
         /// Gets the URI of the gateway for an Azure Mobile Application.
         /// </summary>
         /// <param name="mobileAppUri">
@@ -235,49 +186,6 @@ namespace Microsoft.WindowsAzure.MobileServices
             }
 
             return uri;
-        }
-
-        /// <summary>
-        /// Gets the URI of the default Azure Mobile Application Code site.
-        /// </summary>
-        /// <param name="mobileAppUri">
-        /// URI of the Azure Mobile Application.
-        /// </param>
-        /// <returns>
-        /// URI of the default Azure Mobile Application Code site
-        /// </returns>
-        public static Uri GetDefaultMobileAppCodeUri(Uri mobileAppUri)
-        {
-            if (mobileAppUri == null)
-            {
-                throw new ArgumentNullException("mobileAppUri");
-            }
-
-            var gatewayUri = GetGatewayUri(mobileAppUri);
-            var mobileAppSiteName = GetMobileAppName(mobileAppUri) + DefaultMobileAppCodeSiteSuffix;
-
-            return new Uri(gatewayUri, AddTrailingSlash(mobileAppSiteName));
-        }
-
-        /// <summary>
-        /// Gets the name of the Azure Mobile Application from it's URI.
-        /// </summary>
-        /// <param name="mobileAppUri">
-        /// URI of the Azure Mobile Application.
-        /// </param>
-        /// <returns>
-        /// Name of the Azure Mobile Application.
-        /// </returns>
-        private static string GetMobileAppName(Uri mobileAppUri)
-        {
-            // Expected a mobile app URI of the form: http://gateway/mobileappname
-            // Such an URI will have 2 segments: "/" and "<mobileappname>"
-            if (!mobileAppUri.IsAbsoluteUri || mobileAppUri.Segments.Length != 2)
-            {
-                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "{0} is not a valid Azure Mobile Application URI", mobileAppUri));
-            }
-
-            return mobileAppUri.Segments[1].TrimEnd(Slash);
         }
     }
 }

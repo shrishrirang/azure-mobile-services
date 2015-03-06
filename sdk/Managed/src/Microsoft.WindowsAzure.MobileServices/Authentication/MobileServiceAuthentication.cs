@@ -63,6 +63,11 @@ namespace Microsoft.WindowsAzure.MobileServices
                 throw new ArgumentNullException("providerName");
             }
 
+            if (client.GatewayUri == null)
+            {
+                throw new ArgumentException("Cannot work with a MobileServiceClient that does not specify a gateway URI", "client");
+            }
+
             this.Client = client;
             this.Parameters = parameters;
             this.ProviderName = providerName;
