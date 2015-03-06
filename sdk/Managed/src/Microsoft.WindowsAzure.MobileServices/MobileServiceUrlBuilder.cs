@@ -155,9 +155,19 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </remarks>
         public static Uri GetMobileAppCodeUri(Uri mobileAppUri, string mobileAppCodeSiteName)
         {
-            if (string.IsNullOrEmpty(mobileAppCodeSiteName))
+            if (mobileAppUri == null)
             {
-                throw new ArgumentException("Expected a non null, non empty string", "mobileAppCodeSiteName");
+                throw new ArgumentNullException("mobileAppUri");
+            }
+
+            if (mobileAppCodeSiteName == null)
+            {
+                throw new ArgumentNullException("mobileAppCodeSiteName");
+            }
+
+            if (string.IsNullOrEmpty(mobileAppCodeSiteName.Trim()))
+            {
+                throw new ArgumentException("Expected a non empty string", "mobileAppCodeSiteName");
             }
 
             if (!mobileAppUri.IsAbsoluteUri)
