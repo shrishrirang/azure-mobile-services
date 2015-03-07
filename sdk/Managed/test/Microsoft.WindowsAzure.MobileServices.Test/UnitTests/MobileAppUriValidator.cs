@@ -89,7 +89,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test.UnitTests
         /// </summary>
         public string GetApiUriPath(string relativeUri)
         {
-            var apiUri = new Uri(MobileServiceUrlBuilder.CombinePaths(ApiBaseUri, relativeUri));
+            var apiUri = new Uri(ApiBaseUri + relativeUri);
 
             return apiUri.AbsolutePath;
         }

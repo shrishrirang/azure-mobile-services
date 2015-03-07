@@ -433,7 +433,6 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             AssertEx.MatchUris(hijack.Requests, mobileAppUriValidator.GetTableUri("stringId_test_table?$top=50&__includeDeleted=true&__systemproperties=__version%2C__deleted"));
         }
         
-        //ttodoshrirs - summaries for MSC.cs
         [AsyncTestMethod]
         public async Task PullAsync_UsesTopInQuery_IfLessThan50()
         {

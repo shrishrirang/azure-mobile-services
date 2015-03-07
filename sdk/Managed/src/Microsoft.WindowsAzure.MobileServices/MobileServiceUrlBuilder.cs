@@ -15,6 +15,8 @@ namespace Microsoft.WindowsAzure.MobileServices
     /// </summary>
     internal static class MobileServiceUrlBuilder
     {
+        #region Constants
+
         /// <summary>
         /// Delimiter following the scheme in a URI.
         /// </summary>
@@ -24,6 +26,10 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// A constant variable that defines the character '/'.
         /// </summary>
         private const char Slash = '/';
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Converts a dictionary of string key-value pairs into a URI query string.
@@ -187,5 +193,7 @@ namespace Microsoft.WindowsAzure.MobileServices
 
             return uri;
         }
+
+        #endregion
     }
 }

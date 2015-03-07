@@ -19,7 +19,7 @@ namespace Microsoft.WindowsAzure.MobileServices
     /// </summary>
     public class MobileServiceClient : IMobileServiceClient, IDisposable
     {
-        private static HttpMethod defaultHttpMethod = HttpMethod.Post;
+        #region Constants
 
         /// <summary>
         /// Name of the config setting that stores the installation ID.
@@ -32,6 +32,12 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </summary>
         private const string ConfigureAsyncApplicationIdKey = "applicationInstallationId";
 
+        #endregion
+
+        #region Instance/Static Fields
+
+        private static HttpMethod defaultHttpMethod = HttpMethod.Post;
+
         /// <summary>
         /// Default empty array of HttpMessageHandlers.
         /// </summary>
@@ -43,13 +49,17 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// </summary>
         internal string applicationInstallationId;
 
+        #endregion
+
+        #region Properties
+
         /// <summary>
         /// Absolute URI of the Microsoft Azure Mobile Application.
         /// </summary>
         public Uri MobileAppUri { get; private set; }
 
         /// <summary>
-        /// Absolute URI of the resource group's gateway.
+        /// Absolute URI of the Azure Mobile Applications's gateway
         /// </summary>
         public Uri GatewayUri { get; private set; }
 
@@ -101,14 +111,16 @@ namespace Microsoft.WindowsAzure.MobileServices
         internal MobileServiceSerializer Serializer { get; set; }
 
         /// <summary>
-        /// Gets the <see cref="MobileServiceHttpClient"/> associated with the Azure Mobile Application Code site.
+        /// Gets the <see cref="MobileServiceHttpClient"/> associated with the Azure Mobile Application.
         /// </summary>
-        internal MobileServiceHttpClient MobileAppClient { get; private set; }
+        internal MobileServiceHttpClient MobileApplicationClient { get; private set; }
 
         /// <summary>
-        /// Gets the <see cref="MobileServiceHttpClient"/> associated with the Authentication service.
+        /// Gets the <see cref="MobileServiceHttpClient"/> associated with the Authentication endpoint.
         /// </summary>
         internal MobileServiceHttpClient AuthenticationClient { get; private set; }
+
+        #endregion
 
         #region Constructor(s)
 
@@ -152,7 +164,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// Absolute URI of the Microsoft Azure Mobile Application.
         /// </param>
         /// <param name="gatewayUri">
-        /// Absolute URI of the gateway of the Microsoft Azure Mobile Application application.
+        /// Absolute URI of the gateway of the Microsoft Azure Mobile Application.
         /// </param>
         /// <param name="applicationKey">
         /// The application key for the Microsoft Azure Mobile Application.
@@ -208,7 +220,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// Absolute URI of the Microsoft Azure Mobile Application.
         /// </param>
         /// <param name="gatewayUri">
-        /// Absolute URI of the gateway of the Microsoft Azure Mobile Application application.
+        /// Absolute URI of the gateway of the Microsoft Azure Mobile Application.
         /// </param>
         /// <param name="applicationKey">
         /// The application key for the Microsoft Azure Mobile Application.
@@ -257,7 +269,7 @@ namespace Microsoft.WindowsAzure.MobileServices
             this.applicationInstallationId = GetApplicationInstallationId();
             
             handlers = handlers ?? EmptyHttpMessageHandlers;
-            this.MobileAppClient = new MobileServiceHttpClient(handlers, this.MobileAppUri, this.applicationInstallationId, this.ApplicationKey);
+            this.MobileApplicationClient = new MobileServiceHttpClient(handlers, this.MobileAppUri, this.applicationInstallationId, this.ApplicationKey);
 
             if (this.GatewayUri != null)
             {
@@ -276,6 +288,8 @@ namespace Microsoft.WindowsAzure.MobileServices
         }
 
         #endregion
+
+        #region Methods
 
         /// <summary>
         /// Returns a <see cref="IMobileServiceTable"/> instance, which provides 
@@ -610,7 +624,7 @@ namespace Microsoft.WindowsAzure.MobileServices
                 features |= MobileServiceFeatures.AdditionalQueryParameters;
             }
 
-            MobileServiceHttpResponse response = await this.MobileAppClient.RequestAsync(method, CreateAPIUriString(apiName, parameters), this.CurrentUser, content, false, features: features);
+            MobileServiceHttpResponse response = await this.MobileApplicationClient.RequestAsync(method, CreateAPIUriString(apiName, parameters), this.CurrentUser, content, false, features: features);
             return response.Content;
         }
 
@@ -645,7 +659,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         public async Task<HttpResponseMessage> InvokeApiAsync(string apiName, HttpContent content, HttpMethod method, IDictionary<string, string> requestHeaders, IDictionary<string, string> parameters)
         {
             method = method ?? defaultHttpMethod;
-            HttpResponseMessage response = await this.MobileAppClient.RequestAsync(method, CreateAPIUriString(apiName, parameters), this.CurrentUser, content, requestHeaders: requestHeaders, features: MobileServiceFeatures.GenericApiCall);
+            HttpResponseMessage response = await this.MobileApplicationClient.RequestAsync(method, CreateAPIUriString(apiName, parameters), this.CurrentUser, content, requestHeaders: requestHeaders, features: MobileServiceFeatures.GenericApiCall);
             return response;
         }
 
@@ -672,7 +686,7 @@ namespace Microsoft.WindowsAzure.MobileServices
             {
                 ((MobileServiceSyncContext)this.SyncContext).Dispose();
                 // free managed resources
-                this.MobileAppClient.Dispose();
+                this.MobileApplicationClient.Dispose();
             }
         }
 
@@ -734,5 +748,7 @@ namespace Microsoft.WindowsAzure.MobileServices
 
             return installationId;
         }
+
+        #endregion
     }
 }

@@ -79,7 +79,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             Assert.IsTrue(service.MobileAppUri.IsAbsoluteUri);
             Assert.IsTrue(service.MobileAppUri.AbsoluteUri.EndsWith(UriUtilities.Slash.ToString()));
 
-            Assert.IsNotNull(service.MobileAppClient);
+            Assert.IsNotNull(service.MobileApplicationClient);
             Assert.IsNotNull(service.AuthenticationClient);
 
             Throws<FormatException>(() => new MobileServiceClient("not a valid uri!!!@#!@#"));

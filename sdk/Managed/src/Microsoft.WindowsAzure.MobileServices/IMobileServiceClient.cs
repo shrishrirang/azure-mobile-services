@@ -28,7 +28,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         Uri MobileAppUri { get; }
 
         /// <summary>
-        /// Absolute URI of the resource group's gateway.
+        /// Absolute URI of the Azure Mobile Applications's gateway
         /// </summary>
         Uri GatewayUri { get; }
 
