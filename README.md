@@ -1,4 +1,4 @@
-﻿# Microsoft Azure Mobile Services
+# Microsoft Azure Mobile Services
 
 With Microsoft Azure Mobile Services you can add a scalable backend to your connected client applications in minutes.
 To learn more, visit our [Developer Center](http://azure.microsoft.com/en-us/develop/mobile/).
@@ -20,7 +20,10 @@ To get the source code of our SDKs and samples via **git** just type:
 
 ## Change log
 
-see [Change Log](CHANGELOG.md)
+- [iOS SDK](CHANGELOG.ios.md)
+- [Managed SDK](CHANGELOG.managed.md)
+- [Android SDK](CHANGELOG.android.md)
+- [JavaScript SDK](CHANGELOG.javascript.md)
 
 ## Managed Windows 8 and Windows Phone 8 Client SDK
 
@@ -72,7 +75,7 @@ The SDK requires XCode 4.6.3 or greater.
 1. Open the ```sdk\iOS\WindowsAzureMobileServices.xcodeproj``` file in XCode.
 2. Set the active scheme option to ```WindowsAzureMobileServices\* Simulator```.
 3. Open the ```Test\WindowsAzureMobileServicesFunctionalTests.m``` file in the Project Navigator panel of XCode.
-4. In the ```setUp``` code, replace the ```<Microsoft Azure Mobile Service App URL>``` and ```<Application Key>``` with the valid URL and Application Key for a working Mobile Service.
+4. In the ```settings.plist``` file, set ```TestAppUrl``` and ```TestAppApplicationKey``` to a valid URL and Application Key for a working Mobile Service.
 5. Run the tests using Command-U.
 
 ## Android SDK
