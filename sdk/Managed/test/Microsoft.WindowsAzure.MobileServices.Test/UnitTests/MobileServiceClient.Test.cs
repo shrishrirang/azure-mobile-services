@@ -55,7 +55,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             service = new MobileServiceClient(appUrl);
             Assert.AreEqual(appUrl, service.MobileAppUri.ToString());
             Assert.AreEqual(null, service.ApplicationKey);
-            Assert.IsNull(service.AuthenticationClient); // No gateway specified, this should be null.
+            Assert.IsNull(service.AuthenticationHttpClient); // No gateway specified, this should be null.
 
             // No Mobile Application URI null or invalid
             Throws<ArgumentNullException>(() => new MobileServiceClient(mobileAppUri: (string)null));
@@ -79,8 +79,8 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             Assert.IsTrue(service.MobileAppUri.IsAbsoluteUri);
             Assert.IsTrue(service.MobileAppUri.AbsoluteUri.EndsWith(UriUtilities.Slash.ToString()));
 
-            Assert.IsNotNull(service.MobileApplicationClient);
-            Assert.IsNotNull(service.AuthenticationClient);
+            Assert.IsNotNull(service.MobileAppHttpClient);
+            Assert.IsNotNull(service.AuthenticationHttpClient);
 
             Throws<FormatException>(() => new MobileServiceClient("not a valid uri!!!@#!@#"));
         }

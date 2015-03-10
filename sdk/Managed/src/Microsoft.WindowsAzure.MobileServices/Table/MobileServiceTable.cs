@@ -191,7 +191,7 @@ namespace Microsoft.WindowsAzure.MobileServices
 
         private async Task<QueryResult> ReadAsync(string uriString, MobileServiceFeatures features)
         {
-            MobileServiceHttpResponse response = await this.MobileServiceClient.MobileApplicationClient.RequestAsync(HttpMethod.Get, uriString, this.MobileServiceClient.CurrentUser, null, true, features: this.Features | features);
+            MobileServiceHttpResponse response = await this.MobileServiceClient.MobileAppHttpClient.RequestAsync(HttpMethod.Get, uriString, this.MobileServiceClient.CurrentUser, null, true, features: this.Features | features);
 
             return QueryResult.Parse(response, this.MobileServiceClient.SerializerSettings, validate: false);
         }
@@ -270,7 +270,7 @@ namespace Microsoft.WindowsAzure.MobileServices
 
             return await this.TransformHttpException(async () =>
             {
-                MobileServiceHttpResponse response = await this.MobileServiceClient.MobileApplicationClient.RequestAsync(HttpMethod.Post, uriString, this.MobileServiceClient.CurrentUser, instance.ToString(Formatting.None), true, features: this.Features | features);
+                MobileServiceHttpResponse response = await this.MobileServiceClient.MobileAppHttpClient.RequestAsync(HttpMethod.Post, uriString, this.MobileServiceClient.CurrentUser, instance.ToString(Formatting.None), true, features: this.Features | features);
                 var result = GetJTokenFromResponse(response);
                 return RemoveUnrequestedSystemProperties(result, parameters, response.Etag);
             });
@@ -433,7 +433,7 @@ namespace Microsoft.WindowsAzure.MobileServices
 
             return await this.TransformHttpException(async () =>
             {
-                MobileServiceHttpResponse response = await this.MobileServiceClient.MobileApplicationClient.RequestAsync(patchHttpMethod, uriString, this.MobileServiceClient.CurrentUser, content, true, headers, this.Features | features);
+                MobileServiceHttpResponse response = await this.MobileServiceClient.MobileAppHttpClient.RequestAsync(patchHttpMethod, uriString, this.MobileServiceClient.CurrentUser, content, true, headers, this.Features | features);
                 var result = GetJTokenFromResponse(response);
                 return RemoveUnrequestedSystemProperties(result, parameters, response.Etag);
             });
@@ -479,7 +479,7 @@ namespace Microsoft.WindowsAzure.MobileServices
 
             return await this.TransformHttpException(async () =>
             {
-                MobileServiceHttpResponse response = await this.MobileServiceClient.MobileApplicationClient.RequestAsync(HttpMethod.Post, uriString, this.MobileServiceClient.CurrentUser, null, true, headers, this.Features | features);
+                MobileServiceHttpResponse response = await this.MobileServiceClient.MobileAppHttpClient.RequestAsync(HttpMethod.Post, uriString, this.MobileServiceClient.CurrentUser, null, true, headers, this.Features | features);
                 var result = GetJTokenFromResponse(response);
                 return RemoveUnrequestedSystemProperties(result, parameters, response.Etag);
             });
@@ -547,7 +547,7 @@ namespace Microsoft.WindowsAzure.MobileServices
 
             return await TransformHttpException(async () =>
             {
-                MobileServiceHttpResponse response = await this.MobileServiceClient.MobileApplicationClient.RequestAsync(HttpMethod.Delete, uriString, this.MobileServiceClient.CurrentUser, null, false, headers, this.Features | features);
+                MobileServiceHttpResponse response = await this.MobileServiceClient.MobileAppHttpClient.RequestAsync(HttpMethod.Delete, uriString, this.MobileServiceClient.CurrentUser, null, false, headers, this.Features | features);
                 var result = GetJTokenFromResponse(response);
                 return RemoveUnrequestedSystemProperties(result, parameters, response.Etag);
             });
@@ -609,7 +609,7 @@ namespace Microsoft.WindowsAzure.MobileServices
             parameters = AddSystemProperties(this.SystemProperties, parameters);
 
             string uriString = GetUri(this.TableName, id, parameters);
-            MobileServiceHttpResponse response = await this.MobileServiceClient.MobileApplicationClient.RequestAsync(HttpMethod.Get, uriString, this.MobileServiceClient.CurrentUser, null, true, features: this.Features | features);
+            MobileServiceHttpResponse response = await this.MobileServiceClient.MobileAppHttpClient.RequestAsync(HttpMethod.Get, uriString, this.MobileServiceClient.CurrentUser, null, true, features: this.Features | features);
             return GetJTokenFromResponse(response);
         }
 
