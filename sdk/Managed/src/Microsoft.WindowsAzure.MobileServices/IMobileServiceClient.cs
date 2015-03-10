@@ -23,12 +23,12 @@ namespace Microsoft.WindowsAzure.MobileServices
         string ApplicationKey { get; }
 
         /// <summary>
-        /// Absolute URI of the Microsoft Azure Mobile Application.
+        /// Absolute URI of the Microsoft Azure Mobile App.
         /// </summary>
         Uri MobileAppUri { get; }
 
         /// <summary>
-        /// Absolute URI of the Azure Mobile Applications's gateway
+        /// Absolute URI of the Azure App Service Gateway.
         /// </summary>
         Uri GatewayUri { get; }
 

@@ -138,13 +138,13 @@ namespace Microsoft.WindowsAzure.MobileServices
         }
 
         /// <summary>
-        /// Gets the URI of the gateway for an Azure Mobile Application.
+        /// Gets the URI of the gateway for an Azure Mobile App.
         /// </summary>
         /// <param name="mobileAppUri">
-        /// Absolute URI of the Azure Mobile Application. Refer <see cref="IMobileServiceClient.MobileAppUri"/> for more details.
+        /// Absolute URI of the Azure Mobile App. Refer <see cref="IMobileServiceClient.MobileAppUri"/> for more details.
         /// </param>
         /// <returns>
-        /// The absolute URI of the gateway for an Azure Mobile Application.
+        /// The absolute URI of the gateway for an Azure Mobile App.
         /// </returns>
         /// <remarks>
         /// This is just a helper method and doesn't validate the correctness of <paramref name="mobileAppUri"/>.

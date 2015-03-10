@@ -54,12 +54,12 @@ namespace Microsoft.WindowsAzure.MobileServices
         #region Properties
 
         /// <summary>
-        /// Absolute URI of the Microsoft Azure Mobile Application.
+        /// Absolute URI of the Microsoft Azure Mobile App.
         /// </summary>
         public Uri MobileAppUri { get; private set; }
 
         /// <summary>
-        /// Absolute URI of the Azure Mobile Applications's gateway
+        /// Absolute URI of the Azure App Service Gateway.
         /// </summary>
         public Uri GatewayUri { get; private set; }
 
@@ -111,7 +111,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         internal MobileServiceSerializer Serializer { get; set; }
 
         /// <summary>
-        /// Gets the <see cref="MobileServiceHttpClient"/> associated with the Azure Mobile Application.
+        /// Gets the <see cref="MobileServiceHttpClient"/> associated with the Azure Mobile App.
         /// </summary>
         internal MobileServiceHttpClient MobileApplicationClient { get; private set; }
 
@@ -128,7 +128,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// Initializes a new instance of the MobileServiceClient class.
         /// </summary>
         /// <param name="mobileAppUri">
-        /// Absolute URI of the Microsoft Azure Mobile Application.
+        /// Absolute URI of the Microsoft Azure Mobile App.
         /// </param>
         /// <param name="handlers">
         /// Chain of <see cref="HttpMessageHandler" /> instances. 
@@ -143,10 +143,10 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// Initializes a new instance of the MobileServiceClient class.
         /// </summary>
         /// <param name="mobileAppUri">
-        /// Absolute URI of the Microsoft Azure Mobile Application.
+        /// Absolute URI of the Microsoft Azure Mobile App.
         /// </param>
         /// <param name="applicationKey">
-        /// The application key for the Microsoft Azure Mobile Application.
+        /// The application key for the Microsoft Azure Mobile App.
         /// </param> 
         /// <param name="handlers">
         /// Chain of <see cref="HttpMessageHandler" /> instances. 
@@ -161,13 +161,13 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// Initializes a new instance of the MobileServiceClient class.
         /// </summary>
         /// <param name="mobileAppUri">
-        /// Absolute URI of the Microsoft Azure Mobile Application.
+        /// Absolute URI of the Microsoft Azure Mobile App.
         /// </param>
         /// <param name="gatewayUri">
-        /// Absolute URI of the gateway of the Microsoft Azure Mobile Application.
+        /// Absolute URI of the gateway of the Microsoft Azure Mobile App.
         /// </param>
         /// <param name="applicationKey">
-        /// The application key for the Microsoft Azure Mobile Application.
+        /// The application key for the Microsoft Azure Mobile App.
         /// </param> 
         /// <param name="handlers">
         /// Chain of <see cref="HttpMessageHandler" /> instances. 
@@ -185,7 +185,7 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// Initializes a new instance of the MobileServiceClient class.
         /// </summary>
         /// <param name="mobileAppUri">
-        /// Absolute URI of the Microsoft Azure Mobile Application.
+        /// Absolute URI of the Microsoft Azure Mobile App.
         /// </param>
         /// <param name="handlers">
         /// Chain of <see cref="HttpMessageHandler" /> instances. 
@@ -200,9 +200,9 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// Initializes a new instance of the MobileServiceClient class.
         /// </summary>
         /// <param name="mobileAppUri">
-        /// Absolute URI of the Microsoft Azure Mobile Application.
+        /// Absolute URI of the Microsoft Azure Mobile App.
         /// <param name="applicationKey">
-        /// The application key for the Microsoft Azure Mobile Application.
+        /// The application key for the Microsoft Azure Mobile App.
         /// </param> 
         /// <param name="handlers">
         /// Chain of <see cref="HttpMessageHandler" /> instances. 
@@ -217,13 +217,13 @@ namespace Microsoft.WindowsAzure.MobileServices
         /// Initializes a new instance of the MobileServiceClient class.
         /// </summary>
         /// <param name="mobileAppUri">
-        /// Absolute URI of the Microsoft Azure Mobile Application.
+        /// Absolute URI of the Microsoft Azure Mobile App.
         /// </param>
         /// <param name="gatewayUri">
-        /// Absolute URI of the gateway of the Microsoft Azure Mobile Application.
+        /// Absolute URI of the gateway of the Microsoft Azure Mobile App.
         /// </param>
         /// <param name="applicationKey">
-        /// The application key for the Microsoft Azure Mobile Application.
+        /// The application key for the Microsoft Azure Mobile App.
         /// </param> 
         /// <param name="handlers">
         /// Chain of <see cref="HttpMessageHandler" /> instances. 
