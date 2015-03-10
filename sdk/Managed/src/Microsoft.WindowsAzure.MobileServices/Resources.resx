@@ -213,6 +213,9 @@
   <data name="ExpressionUtility_ProjectionNotSupportedOnWindowsPhone75" xml:space="preserve">
     <value>The Linq IQueryable Select() operation is not supported on the Windows Phone 7.5 platform.</value>
   </data>
+  <data name="MobileServiceClient_NotAnAbsoluteURI" xml:space="preserve">
+    <value>{0} is not an absolute URI.</value>
+  </data>
   <data name="MobileServiceClient_NoResponseContent" xml:space="preserve">
     <value>The server did not provide a response with the expected content.</value>
   </data>

@@ -245,7 +245,7 @@ namespace Microsoft.WindowsAzure.MobileServices
             else
             {
                 throw new ArgumentException(
-                    string.Format(CultureInfo.InvariantCulture, "{0} is not an absolute URL", mobileAppUri),
+                    string.Format(CultureInfo.InvariantCulture, Resources.MobileServiceClient_NotAnAbsoluteURI, mobileAppUri),
                     "mobileAppUri");
             }
 
@@ -260,7 +260,7 @@ namespace Microsoft.WindowsAzure.MobileServices
                 else
                 {
                     throw new ArgumentException(
-                        string.Format(CultureInfo.InvariantCulture, "{0} is not an absolute URL", gatewayUri),
+                        string.Format(CultureInfo.InvariantCulture, Resources.MobileServiceClient_NotAnAbsoluteURI, gatewayUri),
                         "gatewayUri");
                 }
             }
