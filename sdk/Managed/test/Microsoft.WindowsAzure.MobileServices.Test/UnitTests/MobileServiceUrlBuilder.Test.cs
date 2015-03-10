@@ -56,27 +56,6 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
         }
 
         [TestMethod]
-        public void GetGatewayUri_ValidUris()
-        {
-            Assert.AreEqual(
-                MobileServiceUrlBuilder.GetGatewayUri(new Uri(DefaultMobileApp)),
-                DefaultGateway);
-
-            Assert.AreEqual(
-                MobileServiceUrlBuilder.GetGatewayUri(new Uri(UriUtilities.RemoveTrailingSlash(DefaultMobileApp))),
-                DefaultGateway);
-        }
-
-        [TestMethod]
-        public void GetGatewayUri_InvalidUris()
-        {
-            Throws<ArgumentNullException>(() => MobileServiceUrlBuilder.GetGatewayUri(null));
-
-            var invalidMobileAppUri = new Uri("abc/", UriKind.Relative);
-            Throws<FormatException>(() => MobileServiceUrlBuilder.GetGatewayUri(invalidMobileAppUri));
-        }
-
-        [TestMethod]
         public void AddTrailingSlashTest()
         {
             Assert.AreEqual(MobileServiceUrlBuilder.AddTrailingSlash("http://abc"), "http://abc/");

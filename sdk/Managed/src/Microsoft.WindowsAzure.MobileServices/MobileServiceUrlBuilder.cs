@@ -138,35 +138,6 @@ namespace Microsoft.WindowsAzure.MobileServices
         }
 
         /// <summary>
-        /// Gets the URI of the gateway for an Azure Mobile App.
-        /// </summary>
-        /// <param name="mobileAppUri">
-        /// Absolute URI of the Azure Mobile App. Refer <see cref="IMobileServiceClient.MobileAppUri"/> for more details.
-        /// </param>
-        /// <returns>
-        /// The absolute URI of the gateway for an Azure Mobile App.
-        /// </returns>
-        /// <remarks>
-        /// This is just a helper method and doesn't validate the correctness of <paramref name="mobileAppUri"/>.
-        /// </remarks>
-        public static Uri GetGatewayUri(Uri mobileAppUri)
-        {
-            if (mobileAppUri == null)
-            {
-                throw new ArgumentNullException("mobileAppUri");
-            }
-
-            if (!mobileAppUri.IsAbsoluteUri)
-            {
-                throw new FormatException(
-                    string.Format(CultureInfo.InvariantCulture,
-                        "URI {0} is not an absolute URI. An absolute URI is expected.", mobileAppUri));
-            }
-
-            return new Uri(mobileAppUri.Scheme + SchemeDelimiter + mobileAppUri.Host + Slash);
-        }
-
-        /// <summary>
         /// Appends a slash ('/') to <paramref name="uri"/> if it is missing a trailing slash.
         /// </summary>
         /// <param name="uri">
