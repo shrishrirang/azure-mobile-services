@@ -65,7 +65,7 @@ namespace Microsoft.WindowsAzure.MobileServices
 
             if (client.GatewayUri == null)
             {
-                throw new ArgumentException("Cannot work with a MobileServiceClient that does not specify a gateway URI", "client");
+                throw new ArgumentException(Resources.MobileServicesAuthentication_MobileServiceClientDefinesNoGateway, "client");
             }
 
             this.Client = client;
