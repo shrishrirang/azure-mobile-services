@@ -281,7 +281,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             var expectedUri = string.Format("{0}{1}/{2}", DefaultServiceUri, InstallationsPath, mobileClient.applicationInstallationId);
             var hijack = TestHttpDelegatingHandler.CreateTestHttpHandler(expectedUri, HttpMethod.Delete, null, HttpStatusCode.NoContent);
 
-            mobileClient = new MobileServiceClient(DefaultServiceUri, null, hijack);
+            mobileClient = new MobileServiceClient(DefaultServiceUri, hijack);
             var pushHttpClient = new PushHttpClient(mobileClient);
 
             await pushHttpClient.DeleteInstallationAsync();
@@ -293,7 +293,7 @@ namespace Microsoft.WindowsAzure.MobileServices.Test
             MobileServiceClient mobileClient = new MobileServiceClient(DefaultServiceUri);
             var expectedUri = string.Format("{0}{1}/{2}", DefaultServiceUri, InstallationsPath, mobileClient.applicationInstallationId);
             var hijack = TestHttpDelegatingHandler.CreateTestHttpHandler(expectedUri, HttpMethod.Delete, null, HttpStatusCode.BadRequest);
-            mobileClient = new MobileServiceClient(DefaultServiceUri, null, hijack);
+            mobileClient = new MobileServiceClient(DefaultServiceUri, hijack);
             var pushHttpClient = new PushHttpClient(mobileClient);
             var exception = await AssertEx.Throws<MobileServiceInvalidOperationException>(
           () => pushHttpClient.DeleteInstallationAsync());
