@@ -50,7 +50,7 @@ $testGroup('MobileServiceTables.js',
         });
 
         var table = client.getTable('books');
-        return table.read('$filter=price eq 100').then(function (results) {
+        return table.includeTotalCount().read('$filter=price eq 100').then(function (results) {
             $assert.areEqual(results.title, 'test');
         });
     }),
