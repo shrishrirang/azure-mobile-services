@@ -154,6 +154,18 @@ $testGroup('Offline tests',
             }, "nullid3").read();
         }).then(function (result) {
             $assert.areEqual(result.length, 1);
+
+            return syncTable.where(function (myid) {
+                return this.id.toUpperCase() === myid;
+            }, "nullid3").read();
+        }).then(function (result) {
+            $assert.areEqual(result.length, 0);
+
+            return syncTable.where(function (myid) {
+                return this.id.toUpperCase() === myid;
+            }, "NULLID3").read();
+        }).then(function (result) {
+            $assert.areEqual(result.length, 1);
         }).then(function (result) {
         }, function (err) {
             throw err;
