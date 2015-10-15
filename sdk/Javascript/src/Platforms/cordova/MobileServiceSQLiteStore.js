@@ -114,24 +114,44 @@ var MobileServiceSQLiteStore = function (dbName) {
         // See: http://www.sqlite.org/limits.html#max_variable_number
         // TODO(shrirs): Add support for tables with more than 999 columns
 
-        var columnNames = [];
-        var columnValues = [];
+        var columnNames = '',
+            columnParams = '',
+            updateClause = '',
+            insertValues = [],
+            updateValues = [];
 
         for (var property in instance) {
-            columnNames.push(property);
-            columnValues.push(instance[property]);
+            if (columnNames !== '') {
+                columnNames += ', ';
+                columnParams += ', ';
+            }
+
+            if (updateClause !== '') {
+                updateClause += ', ';
+            }
+
+            columnNames += property;
+            columnParams += '?';
+
+            if (property !== idPropertyName) {
+                updateClause += property + ' = ?';
+                updateValues.push(instance[property]);
+            }
+
+            insertValues.push(instance[property]);
         }
 
-        // Form string of the following form: ?,?,?,?....,?,? with one '?' for each column
-        var valueClause = Array(columnNames.length + 1).join('?').split('').join();
+        updateValues.push(instance[idPropertyName]);
 
-        var insertStatement = _.format("INSERT OR REPLACE INTO {0} ({1}) VALUES ({2})", tableName, columnNames.join(), valueClause);
+        var insertStatement = _.format("INSERT OR IGNORE INTO {0} ({1}) VALUES ({2})", tableName, columnNames, columnParams);
+        var updateStatement = _.format("UPDATE {0} SET {1} WHERE {2} = ? COLLATE NOCASE", tableName, updateClause, idPropertyName);
 
-        this._db.transaction(function(transaction) {
-            transaction.executeSql(insertStatement, columnValues);
-        }, function(error) {
+        this._db.transaction(function (transaction) {
+            transaction.executeSql(insertStatement, insertValues);
+            transaction.executeSql(updateStatement, updateValues);
+        }, function (error) {
             callback(error);
-        }, function() {
+        }, function () {
             callback();
         });
     });
