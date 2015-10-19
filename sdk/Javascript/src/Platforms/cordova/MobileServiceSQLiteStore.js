@@ -2,14 +2,15 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
-var Platform = require('Platforms/Platform');
-var Validate = require('../../Utilities/Validate');
-var _ = require('../../Utilities/Extensions');
-var queryHelper = require('azure-mobile-apps/src/query');
-var formatSql = require('azure-mobile-apps/src/data/sql/query/format');
+var Platform = require('Platforms/Platform'),
+    Validate = require('../../Utilities/Validate'),
+    _ = require('../../Utilities/Extensions'),
+    queryHelper = require('azure-mobile-apps/src/query'),
+    SQLiteTypes = require('./SQLiteTypes'),
+    SQLiteHelper = require('./SQLiteHelper'),
+    formatSql = require('azure-mobile-apps/src/data/sql/query/format');
 
 var idPropertyName = "id";
-var tables = {};
 
 var MobileServiceSQLiteStore = function (dbName) {
     /// <summary>
@@ -17,6 +18,7 @@ var MobileServiceSQLiteStore = function (dbName) {
     /// </summary>
 
     this._db = window.sqlitePlugin.openDatabase({ name: dbName });
+    this._tableDefinitions = {}; //ttodoshrirs: review prototype props vs instance props
 
     this.defineTable = Platform.async(function (tableDefinition, callback) {
         /// <summary>Defines the local table in the sqlite store</summary>
@@ -25,9 +27,11 @@ var MobileServiceSQLiteStore = function (dbName) {
         /// tableDefinition : {
         ///     name: "todoItemTable",
         ///     columnDefinitions : {
-        ///         id : "INTEGER",
-        ///         description : MobileServiceSQLiteStore.ColumnType.TEXT,
-        ///         price : "REAL"
+        ///         id : "string",
+        ///         metadata : MobileServiceSQLiteStore.ColumnType.Object,
+        ///         description : "string",
+        ///         purchaseDate : "date",
+        ///         price : MobileServiceSQLiteStore.ColumnType.Real
         ///     }
         /// }
         /// </param>
@@ -47,6 +51,7 @@ var MobileServiceSQLiteStore = function (dbName) {
         Validate.isString(tableDefinition.name, 'tableDefinition.name');
         Validate.notNullOrEmpty(tableDefinition.name, 'tableDefinition.name');
 
+        this._tableDefinitions[tableDefinition.name] = tableDefinition;
         var columnDefinitions = tableDefinition.columnDefinitions;
 
         // Validate the specified column types
@@ -109,6 +114,14 @@ var MobileServiceSQLiteStore = function (dbName) {
         Validate.notNullOrEmpty(tableName, 'tableName');
 
         Validate.notNull(instance, 'instance');
+
+        var tableDefinition = this._tableDefinitions[tableName];
+        Validate.notNull(tableDefinition, 'tableDefinition');
+
+        var columnDefinitions = tableDefinition.columnDefinitions;
+        Validate.notNull(columnDefinitions, 'columnDefinitions');
+
+        instance = SQLiteHelper.serialize(instance, columnDefinitions);
 
         // Note: The default maximum number of parameters allowed by sqlite is 999
         // See: http://www.sqlite.org/limits.html#max_variable_number
@@ -176,6 +189,12 @@ var MobileServiceSQLiteStore = function (dbName) {
 
         Validate.notNull(id, 'id');
 
+        var tableDefinition = this._tableDefinitions[tableName];
+        Validate.notNull(tableDefinition, 'tableDefinition');
+
+        var columnDefinitions = tableDefinition.columnDefinitions;
+        Validate.notNull(columnDefinitions, 'columnDefinitions');
+
         var lookupStatement = _.format("SELECT * FROM [{0}] WHERE {1} = ? COLLATE NOCASE", tableName, idPropertyName);
 
         this._db.executeSql(lookupStatement, [id], function (result) {
@@ -185,6 +204,7 @@ var MobileServiceSQLiteStore = function (dbName) {
                 instance = result.rows.item(0); 
             }
 
+            instance = SQLiteHelper.deserialize(instance, columnDefinitions);
             callback(null, instance);
         }, function (err) {
             callback(err);
@@ -250,6 +270,12 @@ var MobileServiceSQLiteStore = function (dbName) {
         Validate.notNull(query, 'query');
         Validate.isObject(query, 'query');
 
+        var tableDefinition = this._tableDefinitions[query.getComponents().table];
+        Validate.notNull(tableDefinition, 'tableDefinition');
+
+        var columnDefinitions = tableDefinition.columnDefinitions;
+        Validate.notNull(columnDefinitions, 'columnDefinitions');
+
         var count,
             result = [],
             odataQuery = queryHelper.toOData(query),
@@ -262,8 +288,12 @@ var MobileServiceSQLiteStore = function (dbName) {
             }
 
             transaction.executeSql(statements[0].sql, getStatementParameters(statements[0]), function (transaction, res) {
+
+                var row;
                 for (var j = 0; j < res.rows.length; j++) {
-                    result.push(res.rows.item(j));
+
+                    row = SQLiteHelper.deserialize(res.rows.item(j), columnDefinitions);
+                    result.push(row);
                 }
             });
 
@@ -294,7 +324,7 @@ function createTable(transaction, tableDefinition) {
     for (var columnName in columnDefinitions) {
         var columnType = columnDefinitions[columnName];
 
-        var columnDefinitionClause = _.format("[{0}] {1}", columnName, columnType);
+        var columnDefinitionClause = _.format("[{0}] {1}", columnName, SQLiteHelper.getColumnAffinity(columnType));
 
         // TODO(shrirs): Handle cases where id property may be missing
         if (columnName === idPropertyName) {
@@ -325,13 +355,7 @@ function addMissingColumns(transaction, tableDefinition, existingColumns) {
 }
 
 // Valid SQL types
-MobileServiceSQLiteStore.ColumnType = {
-    NULL: "NULL",
-    INTEGER: "INTEGER",
-    REAL: "REAL",
-    TEXT: "TEXT",
-    BLOB: "BLOB"
-};
+MobileServiceSQLiteStore.ColumnType = SQLiteTypes.ColumnType;
 
 // Export
 Platform.addToMobileServicesClientNamespace({ MobileServiceSQLiteStore: MobileServiceSQLiteStore });

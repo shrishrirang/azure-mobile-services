@@ -209,6 +209,18 @@ exports.isNumber = function (value) {
     return !_.isNull(value) && (typeof value === 'number');
 };
 
+exports.isInteger = function(value) {
+    /// <summary>
+    /// Determine if a value is an integer.
+    /// </summary>
+    /// <param name="value" type="Object">The value to check.</param>
+    /// <returns type="boolean">
+    /// True if the value is an integer, false othwerise.
+    /// </returns>
+
+    return _.isNumber(value) && (parseInt(value, 10) === parseFloat(value));
+};
+
 exports.isBool = function (value) {
     /// <summary>
     /// Determine if a value is a boolean.

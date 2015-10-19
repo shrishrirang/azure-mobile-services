@@ -12,7 +12,7 @@ var Validate = require('Validate');
 var testServiceUrl = "http://test.com";
 var testServiceKey = "key";
 var testTableName = "items";
-var testDbFile = "test.db";
+var testDbFile = "test101.db";
 
 function createMobileServiceClient() {
 	return new WindowsAzure.MobileServiceClient(testServiceUrl, testServiceKey);
@@ -21,6 +21,9 @@ function createMobileServiceClient() {
 function createStore() {
     return new WindowsAzure.MobileServiceSQLiteStore(testDbFile);
 }
+
+//ttodoshrirs: what to do if new tabledefinition changes types of existing columns or drops columns? ignore or throw?
+// ttodoshrirs: what to do if deserialized column is not part of definition (kind of similar to the above point)
 
 // TODO(shrirs): Add detailed UTs
 $testGroup('Offline tests',
@@ -44,9 +47,10 @@ $testGroup('Offline tests',
         return store.defineTable({
             name: testTableName,
             columnDefinitions: {
-                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.TEXT,
-                description: WindowsAzure.MobileServiceSQLiteStore.ColumnType.TEXT,
-                price: WindowsAzure.MobileServiceSQLiteStore.ColumnType.INTEGER
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                description: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                price: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real,
+                flag: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Boolean
             }
         }).then(function () {
             // Insert an item if it exists
@@ -87,6 +91,7 @@ $testGroup('Offline tests',
         }).then(function () {
             row.id = "nullid3";
             row.description = null;
+            row.flag = true;
             return syncTable.update(row);
         }).then(function () {
             return syncTable.where({
