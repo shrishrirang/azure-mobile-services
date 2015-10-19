@@ -8,8 +8,30 @@
 /// <reference path="..\..\generated\Tests.js" />
 
 var Extensions = require('Extensions');
+var Platform = require('Platforms/Platform');
 
-$testGroup('Extensions.js',
+$testGroup('Extensions.js')
+    .beforeEachAsync(function () {
+        return Platform.async(function (callback) {
+            callback();
+        })();
+    })
+    .afterEachAsync(function () {
+        return Platform.async(function (callback) {
+            callback();
+        })();
+    })
+    .tests(
+
+    $test('isNull')
+    .description('Verify Extensions.isNull works correctly across null/undefined/etc.')
+    .checkAsync(function () {
+
+        return Platform.async(function(callback) {
+            callback();
+        })();
+
+    }),
 
     $test('isNull')
     .description('Verify Extensions.isNull works correctly across null/undefined/etc.')
