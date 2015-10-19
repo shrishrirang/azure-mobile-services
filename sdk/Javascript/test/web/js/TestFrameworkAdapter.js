@@ -193,14 +193,49 @@ function TestGroup(groupName, testsArray) {
 
 TestGroup.prototype.functional = function () { return this; }; // Not used in browser - ignored
 
+TestGroup.prototype.beforeEachAsync = function (action) {
+    this._beforeEachAction = action;
+    return this;
+};
+
+TestGroup.prototype.afterEachAsync = function (action) {
+    this._afterEachAction = action;
+    return this;
+};
+
 TestGroup.prototype.tests = function (/* test1, test2, ... */) {
     this.testsArray = Array.prototype.slice.call(arguments, 0);
     return this;
 };
 
 TestGroup.prototype.exec = function() {
-    QUnit.module(this.groupName);
+
+    var testEnvironment = {};
+
+    if (this._beforeEachAction) {
+        var beforeEachAction = this._beforeEachAction;
+        testEnvironment.beforeEach = function() {
+            performAsyncAction(beforeEachAction);
+        };
+    }
+
+    if (this._afterEachAction) {
+        var afterEachAction = this._afterEachAction;
+        testEnvironment.afterEach = function() {
+            performAsyncAction(afterEachAction);
+        };
+    }
+
+    QUnit.module(this.groupName, testEnvironment);
     for (var i = 0; i < this.testsArray.length; i++) {
         this.testsArray[i].exec();
     }
 };
+
+function performAsyncAction(action) {
+    QUnit.stop();
+    action().then(QUnit.start, function (err) {
+        QUnit.start();
+        QUnit.ok(false, err && err.exception || err);
+    });
+}
