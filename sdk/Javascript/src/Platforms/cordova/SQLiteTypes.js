@@ -10,18 +10,12 @@ exports.ColumnType = {
     Object: "object",
     Array: "array",
     Integer: "integer",
+    Int: "int",
+    Float: "float",
     Real: "real",
     String: "string",
+    Text: "text",
     Boolean: "boolean",
+    Bool: "bool",
     Date: "date"
 };
-
-exports.ColumnAffinity = {
-    Text: "TEXT",
-    Numeric: "NUMERIC",
-    Integer: "INTEGER",
-    Real: "REAL"
-    // BLOB is broken in litehelpers' sqlite plugin for cordova
-    // blob: "BLOB"
-};
-

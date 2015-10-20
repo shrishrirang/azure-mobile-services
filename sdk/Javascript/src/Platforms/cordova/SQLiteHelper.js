@@ -17,29 +17,27 @@ exports.getColumnAffinity = function(columnType) {
     var columnAffinity;
 
     switch (columnType) {
-    case ColumnType.Object:
-        columnAffinity = ColumnAffinity.Text;
-        break;
-    case ColumnType.Array:
-        columnAffinity = ColumnAffinity.Text;
-        break;
-    case ColumnType.Integer:
-        columnAffinity = ColumnAffinity.Integer;
-        break;
-    case ColumnType.Real:
-        columnAffinity = ColumnAffinity.Real;
-        break;
-    case ColumnType.String:
-        columnAffinity = ColumnAffinity.Text;
-        break;
-    case ColumnType.Boolean:
-        columnAffinity = ColumnAffinity.Integer;
-        break;
-    case ColumnType.Date:
-        columnAffinity = ColumnAffinity.Numeric;
-        break;
-    default:
-        throw Platform.getResourceString('SQLiteHelper_UnsupportedColumnType', columnType); //ttodoshrirs
+        case ColumnType.Object:
+        case ColumnType.Array:
+        case ColumnType.String:
+        case ColumnType.Text:
+            columnAffinity = "TEXT";
+            break;
+        case ColumnType.Integer:
+        case ColumnType.Int:
+        case ColumnType.Boolean:
+        case ColumnType.Bool:
+            columnAffinity = "INTEGER";
+            break;
+        case ColumnType.Real:
+        case ColumnType.Float:
+            columnAffinity = "REAL";
+            break;
+        case ColumnType.Date:
+            columnAffinity = "NUMERIC";
+            break;
+        default:
+            throw Platform.getResourceString('SQLiteHelper_UnsupportedColumnType', columnType); //ttodoshrirs
     }
 
     return columnAffinity;
@@ -96,14 +94,20 @@ function serializeMember(value, columnType) {
         case ColumnType.Object:
         case ColumnType.Array:
         case ColumnType.String:
+        case ColumnType.Text:
             serializedValue = convertToText(value);
             break;
         case ColumnType.Integer:
+        case ColumnType.Int:
         case ColumnType.Boolean:
-        case ColumnType.Date:
+        case ColumnType.Bool:
             serializedValue = convertToInteger(value);
             break;
+        case ColumnType.Date:
+            serializedValue = convertToDate(value);
+            break;
         case ColumnType.Real:
+        case ColumnType.Float:
             serializedValue = convertToReal(value);
             break;
         default:
@@ -124,18 +128,22 @@ function deserializeMember(value, columnType) {
             deserializedValue = convertToArray(value);
             break;
         case ColumnType.String:
+        case ColumnType.Text:
             deserializedValue = convertToText(value);
             break;
         case ColumnType.Integer:
+        case ColumnType.Int:
             deserializedValue = convertToInteger(value);
             break;
         case ColumnType.Boolean:
+        case ColumnType.Bool:
             deserializedValue = convertToBoolean(value);
             break;
         case ColumnType.Date:
             deserializedValue = convertToDate(value);
             break;
         case ColumnType.Real:
+        case ColumnType.Float:
             deserializedValue = convertToReal(value);
             break;
         // We want to be able to deserialize values whose type is not defined.
@@ -194,7 +202,7 @@ function convertToDate(value) {
         return value;
     }
 
-    if (_.isInteger(value)) {
+    if (_.isInteger(value) || _.isString(value)) {
         return new Date(value);
     }
 

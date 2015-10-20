@@ -68,6 +68,8 @@ redefinetable: make sure database is read as is without conversion if definetabl
 id column type: array? allowed? 
 test: string to int conversion. managed supports it.
 do date testing;
+write undefined , null values to store tables
+single column: the ID column. currently it fails.
 */
 
 $testGroup('SQLiteStore tests')
@@ -370,6 +372,61 @@ $testGroup('SQLiteStore tests')
             return store.lookup(testTableName, "someid");
         }).then(function (result) {
             $assert.areEqual(result, null);
+        }, function (error) {
+            $assert.fail(error);
+        });
+    }),
+
+    $test('Serialization: roundtripping verification')
+    .checkAsync(function () {
+        var store = createStore(),
+            row = {
+                id: "someid",
+                object: {
+                    int: 1,
+                    string: "str1"
+                },
+                array: [
+                    2,
+                    "str2",
+                    {
+                        int: 3,
+                        array: [4, 5, 6]
+                    }
+                ],
+                integer: 7,
+                int: 8,
+                float: 8.5,
+                real: 9.5,
+                string: "str3",
+                text: "str4",
+                boolean: true,
+                bool: false,
+                date: new Date(2015, 11, 11, 23, 5, 59)
+            };
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                object: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Object,
+                array: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Array,
+                integer: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer,
+                int: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Int,
+                float: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Float,
+                real: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real,
+                string: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                text: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text,
+                boolean: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Boolean,
+                bool: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Bool,
+                date: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Date
+            }
+        }).then(function () {
+            return store.upsert(testTableName, row);
+        }).then(function () {
+            return store.lookup(testTableName, row.id);
+        }).then(function (result) {
+            $assert.areEqual(result, row);
         }, function (error) {
             $assert.fail(error);
         });
