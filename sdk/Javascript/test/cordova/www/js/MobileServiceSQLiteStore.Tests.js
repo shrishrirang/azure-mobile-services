@@ -29,16 +29,16 @@ DefineTable
 1 - store operations when define is not performed yet.
 
 Serialization
-- make sure serializing data of all supported types and deserializing again results in original values
+1- make sure serializing data of all supported types and deserializing again results in original values
 
 Lookup (id of different data types)
-- lookup: insert something, read it. something can be of all supported data types? does ID as object make sense?
-- lookup: look for something that does not exist
-- Call without params or wrong params
+1 - lookup: insert something, read it. something can be of all supported data types? does ID as object make sense?
+1 - lookup: look for something that does not exist
+1 - Call without params or wrong params
 
-Insert (id of different data types)
-- insert: double insert failure testing
-- Call without params or wrong params
+1 Insert (id of different data types)
+0 - insert: double insert failure testing  (Table UT)
+0 - Call without params or wrong params
 
 Upsert (id of different data types)
 - upsert something that exists
@@ -374,6 +374,61 @@ $testGroup('SQLiteStore tests')
             $assert.areEqual(result, null);
         }, function (error) {
             $assert.fail(error);
+        });
+    }),
+
+    $test('lookup: invoked with extra parameters')
+    .description('Check that promise returned by lookup is resolved/rejected when invoked with extra parameters')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer,
+                price: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+            }
+        }).then(function () {
+            return store.lookup(testTableName, 'some id', 'extra param');
+        }).then(function (result) {
+            $assert.fail('failure expected');
+        }, function (error) {
+        });
+    }),
+
+    $test('lookup: null id')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer,
+                price: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+            }
+        }).then(function () {
+            return store.lookup(testTableName, null);
+        }).then(function (result) {
+            $assert.fail('failure expected');
+        }, function (error) {
+        });
+    }),
+
+    $test('lookup: undefined id')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer,
+                price: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+            }
+        }).then(function () {
+            return store.lookup(testTableName, undefined);
+        }).then(function (result) {
+            $assert.fail('failure expected');
+        }, function (error) {
         });
     }),
 
