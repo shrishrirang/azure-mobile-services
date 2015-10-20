@@ -8,7 +8,8 @@
 /// <reference path=".\Generated\MobileServices.Cordova.Internals.js" />
 
 var Validate = require('Validate'),
-    Platform = require('Platforms/Platform');
+    Platform = require('Platforms/Platform'),
+    Query = require('query.js').Query;
 
 var testServiceUrl = "http://test.com";
 var testServiceKey = "key";
@@ -22,9 +23,9 @@ DefineTable
 1- define a table, add data to it, read it to check table was created
 1- define a table, add data, add new columns using definetable again:
 1 - read old data. check old data is augmented with null valued columns
-0 - add new data. read new data. check that new columns exist.
+* - add new data. read new data. check that new columns exist.
 1- try adding columns values that are not defined
-- define table with primary key of different data types, add those values, read those values
+0 - define table with primary key of different data types, add those values, read those values
 - store operations when define is not performed yet.
 
 Serialization
@@ -205,6 +206,41 @@ $testGroup('SQLiteStore tests')
             $assert.areEqual(result, row);
         }, function (err) {
             $assert.fail(err);
+        });
+    }),
+
+    $test('upsert when table is not defined')
+    .checkAsync(function () {
+        var store = createStore(),
+            row = { id: 101, description: "some description" };
+
+        return store.upsert(testTableName, row).then(function (result) {
+            $assert.fail("failure expected");
+        }, function (err) {
+        });
+    }),
+
+    $test('lookup when table is not defined')
+    .checkAsync(function () {
+        return createStore().lookup(testTableName, "one").then(function (result) {
+            $assert.fail("failure expected");
+        }, function (err) {
+        });
+    }),
+
+    $test('delete when table is not defined')
+    .checkAsync(function () {
+        return createStore().del(testTableName, "one").then(function (result) {
+            $assert.fail("failure expected");
+        }, function (err) {
+        });
+    }),
+
+    $test('read when table is not defined')
+    .checkAsync(function () {
+        return createStore().read(new Query(testTableName)).then(function (result) {
+            $assert.fail("failure expected");
+        }, function (err) {
         });
     })
 );
