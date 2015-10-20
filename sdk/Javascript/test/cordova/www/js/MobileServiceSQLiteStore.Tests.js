@@ -181,12 +181,13 @@ $testGroup('SQLiteStore tests')
     $test('defineTable: reading undefined columns should work')
     .checkAsync(function () {
         var store = createStore(),
-            row = { id: 101, flag: 51},
+            row = { id: 101, flag: 51, object: { "a": 21 } },
             tableDefinition = {
                 name: testTableName,
                 columnDefinitions: {
                     id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer,
-                    flag: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer
+                    flag: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer,
+                    object: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Object
                 }
             };
 
@@ -200,6 +201,7 @@ $testGroup('SQLiteStore tests')
             // Now read data inserted before changing column definition
             return store.lookup(testTableName, row.id);
         }).then(function (result) {
+            // Check that the original data is read irrespective of whether the properties are defined by defineColumn
             $assert.areEqual(result, row);
         }, function (err) {
             $assert.fail(err);

@@ -80,10 +80,7 @@ exports.deserialize = function (value, columnDefinitions) {
 
     var columnType;
     for (var property in value) { //ttodoshrirs error handling
-
         columnType = columnDefinitions[property];
-        Validate.notNull(columnType);
-
         deserializedValue[property] = deserializeMember(value[property], columnType);
     }
 
@@ -140,6 +137,10 @@ function deserializeMember(value, columnType) {
             break;
         case ColumnType.Real:
             deserializedValue = convertToReal(value);
+            break;
+        // We want to be able to deserialize values whose type is not defined.
+        case undefined:
+            deserializedValue = value;
             break;
         default:
             throw Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion', value, typeof value, columnType);//ttodoshrirs
