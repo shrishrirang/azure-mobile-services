@@ -38,8 +38,8 @@ $assert = {
         // As above, regard null and undefined as the same thing
         QUnit.ok(value !== null && value !== undefined, message);
     },
-    areEqual: QUnit.equal,
-    areNotEqual: QUnit.notEqual,
+    areEqual: QUnit.deepEqual,
+    areNotEqual: QUnit.notDeepEqual,
     fail: function (message) { QUnit.ok(false, message); },
     contains: function(str, substr, message) {
         message = message || (str + " should contain " + substr);

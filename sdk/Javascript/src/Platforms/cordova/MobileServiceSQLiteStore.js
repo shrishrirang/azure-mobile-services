@@ -188,7 +188,7 @@ var MobileServiceSQLiteStore = function (dbName) {
         Validate.notNullOrEmpty(tableName, 'tableName');
 
         Validate.notNull(id, 'id');
-
+        
         var tableDefinition = this._tableDefinitions[tableName];
         Validate.notNull(tableDefinition, 'tableDefinition');
 
@@ -199,13 +199,17 @@ var MobileServiceSQLiteStore = function (dbName) {
 
         this._db.executeSql(lookupStatement, [id], function (result) {
 
-            var instance = null;
-            if (result.rows.length !== 0) {
-                instance = result.rows.item(0); 
-            }
+            try {
+                var instance = null;
+                if (result.rows.length !== 0) {
+                    instance = result.rows.item(0);
+                }
 
-            instance = SQLiteHelper.deserialize(instance, columnDefinitions);
-            callback(null, instance);
+                instance = SQLiteHelper.deserialize(instance, columnDefinitions);
+                callback(null, instance);
+            } catch (err) {
+                callback(err);
+            }
         }, function (err) {
             callback(err);
         });
