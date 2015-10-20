@@ -15,10 +15,6 @@ var testServiceKey = "key";
 var testTableName = "items";
 var testDbFile = "test101.db";
 
-function createStore() {
-    return new WindowsAzure.MobileServiceSQLiteStore(testDbFile);
-}
-
 /*
 ttodoshrirs:
 
@@ -77,6 +73,7 @@ $testGroup('SQLiteStore tests')
     .beforeEachAsync(Platform.async( function(callback) {
         var db = window.sqlitePlugin.openDatabase({ name: testDbFile });
 
+        // Delete table created by the unit tests
         db.executeSql('DROP TABLE IF EXISTS items', null, function() {
             callback();
         }, function(err) {
@@ -101,8 +98,8 @@ $testGroup('SQLiteStore tests')
             return store.lookup(testTableName, row.id);
         }).then(function(result) {
             $assert.areEqual(result, row);
-        }, function() {
-            $assert.fail("test should have succeeded");
+        }, function(error) {
+            $assert.fail(error);
         });
     }),
 
@@ -129,8 +126,8 @@ $testGroup('SQLiteStore tests')
             // Expect a null value for the newly added column
             row.newColumn = null;
             $assert.areEqual(result, row);
-        }, function () {
-            $assert.fail("test should have succeeded");
+        }, function (error) {
+            $assert.fail(error);
         });
     }),
 
@@ -156,8 +153,60 @@ $testGroup('SQLiteStore tests')
         }).then(function (result) {
             row.flag = true;
             $assert.areEqual(result, row);
+        }, function (error) {
+            $assert.fail(error);
+        });
+    }),
+
+    $test('defineTable: adding columns that are not defined should fail')
+    .checkAsync(function () {
+        var store = createStore(),
+            row = { id: 101, flag: 51, undefinedColumn: 1 },
+            tableDefinition = {
+                name: testTableName,
+                columnDefinitions: {
+                    id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer,
+                    flag: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer
+                }
+            };
+
+        return store.defineTable(tableDefinition).then(function() {
+            return store.upsert(testTableName, row);
+        }).then(function(result) {
+            $assert.fail('test should have failed');
         }, function (err) {
-            $assert.fail("test should have succeeded" + err);
+        });
+    }),
+
+    $test('defineTable: reading undefined columns should work')
+    .checkAsync(function () {
+        var store = createStore(),
+            row = { id: 101, flag: 51},
+            tableDefinition = {
+                name: testTableName,
+                columnDefinitions: {
+                    id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer,
+                    flag: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer
+                }
+            };
+
+        return store.defineTable(tableDefinition).then(function() {
+            return store.upsert(testTableName, row);
+        }).then(function () {
+            // Now change column deinition to only contain id column
+            delete tableDefinition.columnDefinitions.flag;
+            return store.defineTable(tableDefinition);
+        }).then(function () {
+            // Now read data inserted before changing column definition
+            return store.lookup(testTableName, row.id);
+        }).then(function (result) {
+            $assert.areEqual(result, row);
+        }, function (err) {
+            $assert.fail(err);
         });
     })
 );
+
+function createStore() {
+    return new WindowsAzure.MobileServiceSQLiteStore(testDbFile);
+}
