@@ -26,7 +26,7 @@ DefineTable
 * - add new data. read new data. check that new columns exist.
 1- try adding columns values that are not defined
 0 - define table with primary key of different data types, add those values, read those values
-- store operations when define is not performed yet.
+1 - store operations when define is not performed yet.
 
 Serialization
 - make sure serializing data of all supported types and deserializing again results in original values
@@ -241,6 +241,137 @@ $testGroup('SQLiteStore tests')
         return createStore().read(new Query(testTableName)).then(function (result) {
             $assert.fail("failure expected");
         }, function (err) {
+        });
+    }),
+
+    $test('lookup: Id of type string')
+    .checkAsync(function () {
+        var store = createStore(),
+            row = { id: "someid", price: 51.5 };
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                price: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+            }
+        }).then(function () {
+            return store.upsert(testTableName, row);
+        }).then(function () {
+            return store.lookup(testTableName, row.id);
+        }).then(function (result) {
+            $assert.areEqual(result, row);
+        }, function (error) {
+            $assert.fail(error);
+        });
+    }),
+
+    $test('lookup: Id of type integer')
+    .checkAsync(function () {
+        var store = createStore(),
+            row = { id: 51, price: 51.5 };
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer,
+                price: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+            }
+        }).then(function () {
+            return store.upsert(testTableName, row);
+        }).then(function () {
+            return store.lookup(testTableName, "51");
+        }).then(function (result) {
+            $assert.areEqual(result, row);
+        }, function (error) {
+            $assert.fail(error);
+        });
+    }),
+
+    $test('lookup: Id of type real')
+    .checkAsync(function () {
+        var store = createStore(),
+            row = { id: 21.11, price: 51.5 };
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real,
+                price: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+            }
+        }).then(function () {
+            return store.upsert(testTableName, row);
+        }).then(function () {
+            return store.lookup(testTableName, "21.11");
+        }).then(function (result) {
+            $assert.areEqual(result, row);
+        }, function (error) {
+            $assert.fail(error);
+        });
+    }),
+
+    $test('lookup: Id of type object')
+    .checkAsync(function () {
+        var store = createStore(),
+            idValue = {"a": 11},
+            row = { id: idValue, price: 51.5 };
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Object,
+                price: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+            }
+        }).then(function () {
+            return store.upsert(testTableName, row);
+        }).then(function () {
+            return store.lookup(testTableName, JSON.stringify(idValue));
+        }).then(function (result) {
+            $assert.areEqual(result, row);
+        }, function (error) {
+            $assert.fail(error);
+        });
+    }),
+
+    $test('lookup: Id of type array')
+    .checkAsync(function () {
+        var store = createStore(),
+            idValue = [1, 2],
+            row = { id: idValue, price: 51.5 };
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Array,
+                price: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+            }
+        }).then(function () {
+            return store.upsert(testTableName, row);
+        }).then(function () {
+            return store.lookup(testTableName, JSON.stringify(idValue));
+        }).then(function (result) {
+            $assert.areEqual(result, row);
+        }, function (error) {
+            $assert.fail(error);
+        });
+    }),
+
+    $test('lookup: unsuccessful')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer,
+                price: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+            }
+        }).then(function () {
+            return store.lookup(testTableName, "someid");
+        }).then(function (result) {
+            $assert.areEqual(result, null);
+        }, function (error) {
+            $assert.fail(error);
         });
     })
 );
