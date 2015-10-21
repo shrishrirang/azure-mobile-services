@@ -114,6 +114,8 @@ var MobileServiceSQLiteStore = function (dbName) {
         Validate.notNullOrEmpty(tableName, 'tableName');
 
         Validate.notNull(instance, 'instance');
+        Validate.isObject(instance, 'instance');
+        Validate.isValidId(instance[idPropertyName], 'instance.' + idPropertyName);
 
         var tableDefinition = this._tableDefinitions[tableName];
         Validate.notNull(tableDefinition, 'tableDefinition');
@@ -187,7 +189,7 @@ var MobileServiceSQLiteStore = function (dbName) {
         Validate.isString(tableName, 'tableName');
         Validate.notNullOrEmpty(tableName, 'tableName');
 
-        Validate.notNull(id, 'id');
+        Validate.isValidId(id, 'id');
         
         var tableDefinition = this._tableDefinitions[tableName];
         Validate.notNull(tableDefinition, 'tableDefinition');
@@ -232,6 +234,10 @@ var MobileServiceSQLiteStore = function (dbName) {
 
         Validate.isString(tableName, 'tableName');
         Validate.notNullOrEmpty(tableName, 'tableName');
+
+        Validate.notNull(instance, 'instance');
+        Validate.isObject(instance, 'instance');
+        Validate.isValidId(instance[idPropertyName], 'instance.' + idPropertyName);
 
         var deleteStatement = _.format("DELETE FROM {0} WHERE {1} = ? COLLATE NOCASE", tableName, idPropertyName);
 
