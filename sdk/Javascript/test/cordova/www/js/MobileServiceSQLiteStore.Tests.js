@@ -2,23 +2,25 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // ----------------------------------------------------------------------------
 
-/// <reference path="C:\Program Files (x86)\Microsoft SDKs\Windows\v8.0\ExtensionSDKs\Microsoft.WinJS.1.0\1.0\DesignTime\CommonConfiguration\Neutral\Microsoft.WinJS.1.0\js\base.js" />
-/// <reference path="C:\Program Files (x86)\Microsoft SDKs\Windows\v8.0\ExtensionSDKs\Microsoft.WinJS.1.0\1.0\DesignTime\CommonConfiguration\Neutral\Microsoft.WinJS.1.0\js\ui.js" />
-/// <reference path=".\Generated\Tests.js" />
-/// <reference path=".\Generated\MobileServices.Cordova.Internals.js" />
+/// <reference path='C:\Program Files (x86)\Microsoft SDKs\Windows\v8.0\ExtensionSDKs\Microsoft.WinJS.1.0\1.0\DesignTime\CommonConfiguration\Neutral\Microsoft.WinJS.1.0\js\base.js' />
+/// <reference path='C:\Program Files (x86)\Microsoft SDKs\Windows\v8.0\ExtensionSDKs\Microsoft.WinJS.1.0\1.0\DesignTime\CommonConfiguration\Neutral\Microsoft.WinJS.1.0\js\ui.js' />
+/// <reference path='.\Generated\Tests.js' />
+/// <reference path='.\Generated\MobileServices.Cordova.Internals.js' />
 
 var Validate = require('Validate'),
     Platform = require('Platforms/Platform'),
     Query = require('query.js').Query;
 
-var testServiceUrl = "http://test.com";
-var testServiceKey = "key";
-var testTableName = "items";
-var testDbFile = "test101.db";
+var testServiceUrl = 'http://test.com';
+var testServiceKey = 'key';
+var testTableName = 'items';
+var testDbFile = 'test101.db';
 
 /*
 ttodoshrirs:
-
+//ttodoshrirs: add description to tests wherever needed
+//ttodoshrirs: case insensitive id operations
+    
 DefineTable
 1- define a table, add data to it, read it to check table was created
 1- define a table, add data, add new columns using definetable again:
@@ -58,15 +60,17 @@ Querying
 - skip/take beyond count
 - negative skip, negative take
 - Call without params or wrong params
+- case insensitivity
+- nothing found
 
 
 1 Additional: missing ID
 0 auto guid generation - table test
-invalid tabledefinition (missing name, invalid column type)
-try to insert column that does not exist in table definition
-invalid datatypes (column is int, but row contains string, etc)
-raw verification using direct sql statements
-redefine table (define twice)
+1 invalid tabledefinition (missing name, invalid column type)
+1 try to insert column that does not exist in table definition
+1 invalid datatypes (column is int, but row contains string, etc)
+0 raw verification using direct sql statements
+1 redefine table (define twice)
 redefinetable: make sure database is read as is without conversion if definetable does not have a corresponding column
 id column type: array? allowed? 
 test: string to int conversion. managed supports it.
@@ -224,7 +228,7 @@ $testGroup('SQLiteStore tests')
     .checkAsync(function () {
         var tableDefinition = {
             columnDefinitions: {
-                id: "unsupportedtype",
+                id: 'unsupportedtype',
                 flag: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer
             }
         };
@@ -235,30 +239,40 @@ $testGroup('SQLiteStore tests')
         });
     }),
 
-    $test('upsert: adding record with columns that are not defined should fail')
+    $test('defineTable: column type undefined')
     .checkAsync(function () {
-        var store = createStore(),
-            row = { id: 101, flag: 51, undefinedColumn: 1 },
-            tableDefinition = {
-                name: testTableName,
-                columnDefinitions: {
-                    id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer,
-                    flag: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer
-                }
-            };
+        var tableDefinition = {
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer,
+                flag: undefined
+            }
+        };
 
-        return store.defineTable(tableDefinition).then(function() {
-            return store.upsert(testTableName, row);
-        }).then(function(result) {
-            $assert.fail('test should have failed');
-        }, function (err) {
+        return createStore().defineTable(tableDefinition).then(function () {
+            $assert.fail('test should fail');
+        }, function (error) {
+        });
+    }),
+
+    $test('defineTable: column type null')
+    .checkAsync(function () {
+        var tableDefinition = {
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer,
+                flag: null
+            }
+        };
+
+        return createStore().defineTable(tableDefinition).then(function () {
+            $assert.fail('test should fail');
+        }, function (error) {
         });
     }),
 
     $test('defineTable: reading undefined columns should work')
     .checkAsync(function () {
         var store = createStore(),
-            row = { id: 101, flag: 51, object: { "a": 21 } },
+            row = { id: 101, flag: 51, object: { 'a': 21 } },
             tableDefinition = {
                 name: testTableName,
                 columnDefinitions: {
@@ -288,26 +302,26 @@ $testGroup('SQLiteStore tests')
     $test('upsert when table is not defined')
     .checkAsync(function () {
         var store = createStore(),
-            row = { id: 101, description: "some description" };
+            row = { id: 101, description: 'some description' };
 
         return store.upsert(testTableName, row).then(function (result) {
-            $assert.fail("failure expected");
+            $assert.fail('failure expected');
         }, function (err) {
         });
     }),
 
     $test('lookup when table is not defined')
     .checkAsync(function () {
-        return createStore().lookup(testTableName, "one").then(function (result) {
-            $assert.fail("failure expected");
+        return createStore().lookup(testTableName, 'one').then(function (result) {
+            $assert.fail('failure expected');
         }, function (err) {
         });
     }),
 
     $test('delete when table is not defined')
     .checkAsync(function () {
-        return createStore().del(testTableName, "one").then(function (result) {
-            $assert.fail("failure expected");
+        return createStore().del(testTableName, 'one').then(function (result) {
+            $assert.fail('failure expected');
         }, function (err) {
         });
     }),
@@ -315,7 +329,7 @@ $testGroup('SQLiteStore tests')
     $test('read when table is not defined')
     .checkAsync(function () {
         return createStore().read(new Query(testTableName)).then(function (result) {
-            $assert.fail("failure expected");
+            $assert.fail('failure expected');
         }, function (err) {
         });
     }),
@@ -323,7 +337,7 @@ $testGroup('SQLiteStore tests')
     $test('lookup: Id of type string')
     .checkAsync(function () {
         var store = createStore(),
-            row = { id: "someid", price: 51.5 };
+            row = { id: 'someid', price: 51.5 };
 
         return store.defineTable({
             name: testTableName,
@@ -356,7 +370,7 @@ $testGroup('SQLiteStore tests')
         }).then(function () {
             return store.upsert(testTableName, row);
         }).then(function () {
-            return store.lookup(testTableName, "51");
+            return store.lookup(testTableName, '51');
         }).then(function (result) {
             $assert.areEqual(result, row);
         }, function (error) {
@@ -378,7 +392,57 @@ $testGroup('SQLiteStore tests')
         }).then(function () {
             return store.upsert(testTableName, row);
         }).then(function () {
-            return store.lookup(testTableName, "21.11");
+            return store.lookup(testTableName, '21.11');
+        }).then(function (result) {
+            $assert.areEqual(result, row);
+        }, function (error) {
+            $assert.fail(error);
+        });
+    }),
+
+    $test('lookup: verify id case insensitivity')
+    .checkAsync(function () {
+        var store = createStore(),
+            row = { id: 'ABC', description: 'something' };
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text,
+                description: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String
+            }
+        }).then(function () {
+            return store.upsert(testTableName, row);
+        }).then(function () {
+            return store.lookup(testTableName, 'abc');
+        }).then(function (result) {
+            $assert.areEqual(result, row);
+        }, function (error) {
+            $assert.fail(error);
+        });
+    }),
+
+    $test('lookup: read columns that are missing in table definition')
+    .checkAsync(function () {
+        var store = createStore(),
+            row = { id: 'ABC', column1: 1, column2: 2 },
+            tableDefinition = {
+                name: testTableName,
+                columnDefinitions: {
+                    id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text,
+                    column1: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer,
+                    column2: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer
+                }
+            };
+
+        return store.defineTable(tableDefinition).then(function () { 
+            return store.upsert(testTableName, row);
+        }).then(function () {
+            // Redefine the table without column2
+            delete tableDefinition.columnDefinitions.column2;
+            return store.defineTable(tableDefinition);
+        }).then(function () {
+            return store.lookup(testTableName, 'abc');
         }).then(function (result) {
             $assert.areEqual(result, row);
         }, function (error) {
@@ -397,7 +461,7 @@ $testGroup('SQLiteStore tests')
                 price: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
             }
         }).then(function () {
-            return store.lookup(testTableName, "someid");
+            return store.lookup(testTableName, 'someid');
         }).then(function (result) {
             $assert.areEqual(result, null);
         }, function (error) {
@@ -489,7 +553,7 @@ $testGroup('SQLiteStore tests')
                 price: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
             }
         }).then(function () {
-            return store.lookup(testTableName, {invalid: "invalid"});
+            return store.lookup(testTableName, {invalid: 'invalid'});
         }).then(function (result) {
             $assert.fail('failure expected');
         }, function (error) {
@@ -500,14 +564,14 @@ $testGroup('SQLiteStore tests')
     .checkAsync(function () {
         var store = createStore(),
             row = {
-                id: "someid",
+                id: 'someid',
                 object: {
                     int: 1,
-                    string: "str1"
+                    string: 'str1'
                 },
                 array: [
                     2,
-                    "str2",
+                    'str2',
                     {
                         int: 3,
                         array: [4, 5, 6]
@@ -517,8 +581,8 @@ $testGroup('SQLiteStore tests')
                 int: 8,
                 float: 8.5,
                 real: 9.5,
-                string: "str3",
-                text: "str4",
+                string: 'str3',
+                text: 'str4',
                 boolean: true,
                 bool: false,
                 date: new Date(2015, 11, 11, 23, 5, 59)
@@ -554,7 +618,7 @@ $testGroup('SQLiteStore tests')
     $test('upsert: insert new record and then update it')
     .checkAsync(function () {
         var store = createStore(),
-            row = { id: "some id", price: 100 };
+            row = { id: 'some id', price: 100 };
 
         return store.defineTable({
             name: testTableName,
@@ -613,20 +677,91 @@ $testGroup('SQLiteStore tests')
                 prop2: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
             }
         }).then(function () {
-            return store.upsert(testTableName, { id: "some id", prop1: 100, prop2: 200 });
+            return store.upsert(testTableName, { id: 'some id', prop1: 100, prop2: 200 });
         }).then(function () {
-            return store.lookup(testTableName, "some id");
+            return store.lookup(testTableName, 'some id');
         }).then(function (result) {
-            $assert.areEqual(result, { id: "some id", prop1: 100, prop2: 200 });
+            $assert.areEqual(result, { id: 'some id', prop1: 100, prop2: 200 });
             // Update select properties of an existing record
-            return store.upsert(testTableName, { id: "some id", prop2: -99999 });
+            return store.upsert(testTableName, { id: 'some id', prop2: -99999 });
         }).then(function () {
-            return store.lookup(testTableName, "some id");
+            return store.lookup(testTableName, 'some id');
         }).then(function (result) {
-            $assert.areEqual(result, { id: "some id", prop1: 100, prop2: -99999 });
+            $assert.areEqual(result, { id: 'some id', prop1: 100, prop2: -99999 });
         }).then(function () {
         }, function (error) {
             $assert.fail(error);
+        });
+    }),
+
+    $test('upsert: verify id case insensitivity')
+    .checkAsync(function () {
+        var store = createStore(),
+            row = { id: 'ABC', description: 'something' };
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text,
+                description: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String
+            }
+        }).then(function () {
+            // record with an upper cased id
+            return store.upsert(testTableName, { id: 'ABC', description: 'old' });
+        }).then(function () {
+            // update record using a lower cased id
+            return store.upsert(testTableName, { id: 'abc', description: 'new' });
+        }).then(function () {
+            // lookup record using upper cased id
+            return store.lookup(testTableName, 'ABC'); 
+        }).then(function (result) {
+            $assert.areEqual(result, { id: 'ABC', description: 'new' });
+            // lookup record using lower cased id
+            return store.lookup(testTableName, 'abc');
+        }).then(function (result) {
+            $assert.areEqual(result, { id: 'ABC', description: 'new' });
+        }, function (error) {
+            $assert.fail(error);
+        });
+    }),
+
+    $test('upsert: adding record with columns that are not defined should fail')
+    .checkAsync(function () {
+        var store = createStore(),
+            row = { id: 101, flag: 51, undefinedColumn: 1 },
+            tableDefinition = {
+                name: testTableName,
+                columnDefinitions: {
+                    id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer,
+                    flag: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer
+                }
+            };
+
+        return store.defineTable(tableDefinition).then(function () {
+            return store.upsert(testTableName, row);
+        }).then(function (result) {
+            $assert.fail('test should have failed');
+        }, function (err) {
+        });
+    }),
+
+    $test('upsert: adding record with incorrect column type should fail')
+    .checkAsync(function () {
+        var store = createStore(),
+            row = { id: 101, flag: [1, 2] },
+            tableDefinition = {
+                name: testTableName,
+                columnDefinitions: {
+                    id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer,
+                    flag: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer
+                }
+            };
+
+        return store.defineTable(tableDefinition).then(function () {
+            return store.upsert(testTableName, row);
+        }).then(function (result) {
+            $assert.fail('test should have failed');
+        }, function (err) {
         });
     }),
 
@@ -644,7 +779,7 @@ $testGroup('SQLiteStore tests')
         }).then(function () {
             return store.upsert(testTableName, 1000);
         }).then(function () {
-            $assert.fail("failure expected");
+            $assert.fail('failure expected');
         }, function (error) {
         });
     }),
@@ -663,7 +798,7 @@ $testGroup('SQLiteStore tests')
         }).then(function () {
             return store.upsert(testTableName, { prop1: 100, prop2: 200 });
         }).then(function () {
-            $assert.fail("failure expected");
+            $assert.fail('failure expected');
         }, function (error) {
         });
     }),
@@ -683,7 +818,7 @@ $testGroup('SQLiteStore tests')
         }).then(function () {
             return store.upsert(testTableName, { id: null, prop1: 100, prop2: 200 });
         }).then(function () {
-            $assert.fail("failure expected");
+            $assert.fail('failure expected');
         }, function (error) {
         });
     }),
@@ -703,7 +838,7 @@ $testGroup('SQLiteStore tests')
         }).then(function () {
             return store.upsert(testTableName, { id: undefined, prop1: 100, prop2: 200 });
         }).then(function () {
-            $assert.fail("failure expected");
+            $assert.fail('failure expected');
         }, function (error) {
         });
     }),
@@ -723,7 +858,7 @@ $testGroup('SQLiteStore tests')
         }).then(function () {
             return store.upsert(testTableName, { prop1: 100, prop2: 200 });
         }).then(function () {
-            $assert.fail("failure expected");
+            $assert.fail('failure expected');
         }, function (error) {
         });
     }),
@@ -741,9 +876,9 @@ $testGroup('SQLiteStore tests')
                 prop2: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
             }
         }).then(function () {
-            return store.upsert(testTableName, { id: "someid", prop1: 100, prop2: 200 }, 'extra param');
+            return store.upsert(testTableName, { id: 'someid', prop1: 100, prop2: 200 }, 'extra param');
         }).then(function () {
-            $assert.fail("failure expected");
+            $assert.fail('failure expected');
         }, function (error) {
         });
     }),
@@ -760,18 +895,17 @@ $testGroup('SQLiteStore tests')
                 prop2: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
             }
         }).then(function () {
-            return store.del(testTableName, { id: "idnotfound", prop1: 1, prop: 2 });
+            return store.del(testTableName, { id: 'idnotfound', prop1: 1, prop: 2 });
         }).then(function () {
         }, function (error) {
             $assert.fail(error);
         });
     }),
 
-    //ttodoshrirs: case insensitive id operations
     $test('delete: id of type string')
     .checkAsync(function () {
         var store = createStore(),
-            row = { id: "someid", prop1: 100, prop2: 200 };
+            row = { id: 'someid', prop1: 100, prop2: 200 };
 
         return store.defineTable({
             name: testTableName,
@@ -852,6 +986,32 @@ $testGroup('SQLiteStore tests')
         });
     }),
 
+    $test('del: verify id case insensitivity')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text,
+                description: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String
+            }
+        }).then(function () {
+            // record with an upper cased id
+            return store.upsert(testTableName, { id: 'ABC', description: 'something' });
+        }).then(function () {
+            // delete record using lower cased id
+            return store.del(testTableName, {id: 'abc', description: 'whatever'});
+        }).then(function () {
+            // look up the record we attempted to delete
+            return store.lookup(testTableName, 'ABC');
+        }).then(function (result) {
+            $assert.isNull(result);
+        }, function (error) {
+            $assert.fail(error);
+        });
+    }),
+
     $test('delete: null id')
     .checkAsync(function () {
         var store = createStore();
@@ -864,11 +1024,11 @@ $testGroup('SQLiteStore tests')
                 prop2: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
             }
         }).then(function () {
-            return store.upsert(testTableName, { id: "someid", prop1: 100, prop2: 200 });
+            return store.upsert(testTableName, { id: 'someid', prop1: 100, prop2: 200 });
         }).then(function () {
             return store.del(testTableName, null);
         }).then(function () {
-            $assert.fail("failure expected");
+            $assert.fail('failure expected');
         }, function (error) {
         });
     }),
@@ -885,11 +1045,11 @@ $testGroup('SQLiteStore tests')
                 prop2: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
             }
         }).then(function () {
-            return store.upsert(testTableName, { id: "someid", prop1: 100, prop2: 200 });
+            return store.upsert(testTableName, { id: 'someid', prop1: 100, prop2: 200 });
         }).then(function () {
             return store.del(testTableName, { id: undefined, prop: 200 });
         }).then(function () {
-            $assert.fail("failure expected");
+            $assert.fail('failure expected');
         }, function (error) {
         });
     }),
@@ -906,11 +1066,11 @@ $testGroup('SQLiteStore tests')
                 prop2: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
             }
         }).then(function () {
-            return store.upsert(testTableName, { id: "someid", prop1: 100, prop2: 200 });
+            return store.upsert(testTableName, { id: 'someid', prop1: 100, prop2: 200 });
         }).then(function () {
             return store.del(testTableName, { prop1: 100 });
         }).then(function () {
-            $assert.fail("failure expected");
+            $assert.fail('failure expected');
         }, function (error) {
         });
     }),
@@ -919,7 +1079,7 @@ $testGroup('SQLiteStore tests')
     .description('Check that promise returned by upsert is either resolved or rejected even when invoked with extra parameters')
     .checkAsync(function () {
         var store = createStore(),
-            row = { id: "someid", prop1: 100, prop2: 200 };
+            row = { id: 'someid', prop1: 100, prop2: 200 };
 
         return store.defineTable({
             name: testTableName,
@@ -933,7 +1093,7 @@ $testGroup('SQLiteStore tests')
         }).then(function () {
             return store.del(testTableName, 51);
         }).then(function () {
-            $assert.fail("failure expected");
+            $assert.fail('failure expected');
         }, function (error) {
         });
     }),
@@ -942,7 +1102,7 @@ $testGroup('SQLiteStore tests')
     .description('Check that promise returned by upsert is either resolved or rejected even when invoked with extra parameters')
     .checkAsync(function () {
         var store = createStore(),
-            row = { id: "someid", prop1: 100, prop2: 200 };
+            row = { id: 'someid', prop1: 100, prop2: 200 };
 
         return store.defineTable({
             name: testTableName,
@@ -956,7 +1116,7 @@ $testGroup('SQLiteStore tests')
         }).then(function () {
             return store.del(testTableName, row, 'extra param');
         }).then(function () {
-            $assert.fail("failure expected");
+            $assert.fail('failure expected');
         }, function (error) {
         });
     })
