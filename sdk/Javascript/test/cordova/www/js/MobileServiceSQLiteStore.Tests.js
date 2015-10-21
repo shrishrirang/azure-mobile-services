@@ -41,9 +41,12 @@ Lookup (id of different data types)
 0 - Call without params or wrong params
 
 Upsert (id of different data types)
-- upsert something that exists
-- upsert something that does not exist
-- Call without params or wrong params
+1 - upsert something that exists
+1 - upsert something that does not exist
+1- Call without params or wrong params
+//ttodoshrirs: upsert without id.
+0 - update returns inserted item: table test
+
 
 Delete (id of different data types)
 - delete something that does not exist
@@ -378,7 +381,7 @@ $testGroup('SQLiteStore tests')
     }),
 
     $test('lookup: invoked with extra parameters')
-    .description('Check that promise returned by lookup is resolved/rejected when invoked with extra parameters')
+    .description('Check that promise returned by lookup is either resolved or rejected even when invoked with extra parameters')
     .checkAsync(function () {
         var store = createStore();
 
@@ -485,7 +488,169 @@ $testGroup('SQLiteStore tests')
         }, function (error) {
             $assert.fail(error);
         });
+    }),
+
+    $test('upsert: update existing record')
+    .checkAsync(function () {
+        var store = createStore(),
+            row = { id: "some id", price: 100 };
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                price: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+            }
+        }).then(function () {
+            return store.upsert(testTableName, row);
+        }).then(function () {
+            return store.lookup(testTableName, row.id);
+        }).then(function (result) {
+            $assert.areEqual(result, row);
+            // Change property value and upsert again
+            row.price = 5000.1;
+            return store.upsert(testTableName, row);
+        }).then(function () {
+            return store.lookup(testTableName, row.id);
+        }).then(function (result) {
+            $assert.areEqual(result, row);
+        }).then(function () {
+        }, function (error) {
+            $assert.fail(error);
+        });
+    }),
+
+    $test('upsert: update select properties of an existing record')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                prop1: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real,
+                prop2: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+            }
+        }).then(function () {
+            return store.upsert(testTableName, { id: "some id", prop1: 100, prop2: 200 });
+        }).then(function () {
+            return store.lookup(testTableName, "some id");
+        }).then(function (result) {
+            $assert.areEqual(result, { id: "some id", prop1: 100, prop2: 200 });
+            // Update select properties of an existing record
+            return store.upsert(testTableName, { id: "some id", prop2: -99999 });
+        }).then(function () {
+            return store.lookup(testTableName, "some id");
+        }).then(function (result) {
+            $assert.areEqual(result, { id: "some id", prop1: 100, prop2: -99999 });
+        }).then(function () {
+        }, function (error) {
+            $assert.fail(error);
+        });
+    }),
+
+    $test('upsert: missing id')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                prop1: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real,
+                prop2: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+            }
+        }).then(function () {
+            return store.upsert(testTableName, { prop1: 100, prop2: 200 });
+        }).then(function () {
+            $assert.fail("failure expected");
+        }, function (error) {
+        });
+    }),
+
+    $test('upsert: null id')
+    .description('Check that promise returned by upsert is either resolved or rejected even when id is null')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                prop1: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real,
+                prop2: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+            }
+        }).then(function () {
+            return store.upsert(testTableName, { id: null, prop1: 100, prop2: 200 });
+        }).then(function () {
+            $assert.fail("failure expected");
+        }, function (error) {
+        });
+    }),
+
+    $test('upsert: undefined id')
+    .description('Check that promise returned by upsert is either resolved or rejected even when id is undefined')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                prop1: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real,
+                prop2: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+            }
+        }).then(function () {
+            return store.upsert(testTableName, { id: undefined, prop1: 100, prop2: 200 });
+        }).then(function () {
+            $assert.fail("failure expected");
+        }, function (error) {
+        });
+    }),
+
+    ,
+
+    $test('upsert: missing id')
+    .description('Check that promise returned by upsert is either resolved or rejected even when id is missing')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                prop1: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real,
+                prop2: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+            }
+        }).then(function () {
+            return store.upsert(testTableName, { prop1: 100, prop2: 200 });
+        }).then(function () {
+            $assert.fail("failure expected");
+        }, function (error) {
+        });
+    }),
+
+    $test('upsert: invoked with extra parameters')
+    .description('Check that promise returned by upsert is either resolved or rejected even when invoked with extra parameters')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                prop1: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real,
+                prop2: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+            }
+        }).then(function () {
+            return store.upsert(testTableName, { id: "someid", prop1: 100, prop2: 200 }, 'extra param');
+        }).then(function () {
+            $assert.fail("failure expected");
+        }, function (error) {
+        });
     })
+
+    
 );
 
 function createStore() {
