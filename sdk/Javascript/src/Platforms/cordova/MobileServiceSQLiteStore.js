@@ -96,11 +96,10 @@ var MobileServiceSQLiteStore = function (dbName) {
         });
     });
 
-    //TODO(shrirs): instance needs to be an array instead of an object
-    this.upsert = Platform.async(function (tableName, instance, callback) {
-        /// <summary>Updates or inserts an object in the local table</summary>
+    this.upsert = Platform.async(function (tableName, instances, callback) {
+        /// <summary>Updates or inserts one or more objects in the local table</summary>
         /// <param name="tableName">Name of the local table in which the object is to be upserted</param>
-        /// <param name="instance">Object to be inserted or updated in the table</param>
+        /// <param name="instance">Object OR array of objects to be inserted/updated in the table</param>
         /// <returns type="Promise">
         /// A promise that is resolved when the operation is completed successfully.
         /// If the operation fails, the promise is rejected
@@ -114,57 +113,86 @@ var MobileServiceSQLiteStore = function (dbName) {
         Validate.isString(tableName, 'tableName');
         Validate.notNullOrEmpty(tableName, 'tableName');
 
-        Validate.notNull(instance, 'instance');
-        Validate.isObject(instance, 'instance');
-        Validate.isValidId(instance[idPropertyName], 'instance.' + idPropertyName);
-
         var tableDefinition = this._tableDefinitions[tableName];
         Validate.notNull(tableDefinition, 'tableDefinition');
 
         var columnDefinitions = tableDefinition.columnDefinitions;
         Validate.notNull(columnDefinitions, 'columnDefinitions');
 
-        instance = SQLiteHelper.serialize(instance, columnDefinitions);
+        if (_.isNull(instances)) {
+            callback();
+            return;
+        }
+
+        if (_.isObject(instances)) {
+            instances = [instances];
+        }
+
+        Validate.isArray(instances, 'instances');
+
+        var i;
+        for (i = 0; i < instances.length; i++) {
+            Validate.isValidId(instances[i][idPropertyName], 'instance.' + idPropertyName);
+
+            instances[i] = SQLiteHelper.serialize(instances[i], columnDefinitions);
+        }
 
         // Note: The default maximum number of parameters allowed by sqlite is 999
         // See: http://www.sqlite.org/limits.html#max_variable_number
         // TODO(shrirs): Add support for tables with more than 999 columns
 
-        var columnNames = '',
-            columnParams = '',
-            updateClause = '',
-            insertValues = [],
+        // Insert and update SQL statements and their parameters corresponding to each record we want to insert/update in the table.
+        var insertStatements = [],
+            updateStatements = [],
+            insertParameters = [],
+            updateParameters = [];
+
+        var columnNames, columnParams, updateClause, insertValues, updateValues, property, instance;
+        for (i = 0; i < instances.length; i++) {
+            columnNames = '';
+            columnParams = '';
+            updateClause = '';
+            insertValues = [];
             updateValues = [];
+            instance = instances[i];
 
-        for (var property in instance) {
-            if (columnNames !== '') {
-                columnNames += ', ';
-                columnParams += ', ';
+            for (property in instance) {
+                if (columnNames !== '') {
+                    columnNames += ', ';
+                    columnParams += ', ';
+                }
+
+                if (updateClause !== '') {
+                    updateClause += ', ';
+                }
+
+                columnNames += property;
+                columnParams += '?';
+
+                if (property !== idPropertyName) {
+                    updateClause += property + ' = ?';
+                    updateValues.push(instance[property]);
+                }
+
+                insertValues.push(instance[property]);
             }
 
-            if (updateClause !== '') {
-                updateClause += ', ';
-            }
+            updateValues.push(instance[idPropertyName]);
 
-            columnNames += property;
-            columnParams += '?';
+            insertStatements.push(_.format("INSERT OR IGNORE INTO {0} ({1}) VALUES ({2})", tableName, columnNames, columnParams));
+            updateStatements.push(_.format("UPDATE {0} SET {1} WHERE {2} = ? COLLATE NOCASE", tableName, updateClause, idPropertyName));
 
-            if (property !== idPropertyName) {
-                updateClause += property + ' = ?';
-                updateValues.push(instance[property]);
-            }
-
-            insertValues.push(instance[property]);
+            insertParameters.push(insertValues);
+            updateParameters.push(updateValues);
         }
 
-        updateValues.push(instance[idPropertyName]);
-
-        var insertStatement = _.format("INSERT OR IGNORE INTO {0} ({1}) VALUES ({2})", tableName, columnNames, columnParams);
-        var updateStatement = _.format("UPDATE {0} SET {1} WHERE {2} = ? COLLATE NOCASE", tableName, updateClause, idPropertyName);
-
         this._db.transaction(function (transaction) {
-            transaction.executeSql(insertStatement, insertValues);
-            transaction.executeSql(updateStatement, updateValues);
+
+            var i;
+            for (i = 0; i < insertParameters.length; i++) {
+                transaction.executeSql(insertStatements[i], insertParameters[i]);
+                transaction.executeSql(updateStatements[i], updateParameters[i]);
+            }
         }, function (error) {
             callback(error);
         }, function () {
