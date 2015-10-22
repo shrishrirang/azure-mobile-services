@@ -132,7 +132,7 @@ var MobileServiceSQLiteStore = function (dbName) {
 
         var i;
         for (i = 0; i < instances.length; i++) {
-            Validate.isValidId(instances[i][idPropertyName], 'instance.' + idPropertyName);
+            Validate.isValidId(instances[i][idPropertyName], 'instances[' + i + '].' + idPropertyName);
 
             instances[i] = SQLiteHelper.serialize(instances[i], columnDefinitions);
         }
@@ -247,10 +247,10 @@ var MobileServiceSQLiteStore = function (dbName) {
     });
 
     //TODO(shrirs): instance needs to be an array instead of an object
-    this.del = Platform.async(function (tableName, instance, callback) {
+    this.del = Platform.async(function (tableName, instances, callback) {
         /// <summary>The items to delete from the local table</summary>
         /// <param name="tableName">Name of the local table in which delete is to be performed</param>
-        /// <param name="instance">Object to delete from the table</param>
+        /// <param name="instance">Object or an array of objects to delete from the table</param>
         /// <returns type="Promise">
         /// A promise that is resolved when the operation is completed successfully.
         /// If the operation fails, the promise is rejected
@@ -264,16 +264,38 @@ var MobileServiceSQLiteStore = function (dbName) {
         Validate.isString(tableName, 'tableName');
         Validate.notNullOrEmpty(tableName, 'tableName');
 
-        Validate.notNull(instance, 'instance');
-        Validate.isObject(instance, 'instance');
-        Validate.isValidId(instance[idPropertyName], 'instance.' + idPropertyName);
-
-        var deleteStatement = _.format("DELETE FROM {0} WHERE {1} = ? COLLATE NOCASE", tableName, idPropertyName);
-
-        this._db.executeSql(deleteStatement, [instance[idPropertyName]], function (result) {
+        if (_.isNull(instances)) {
             callback();
-        }, function(error) {
+            return;
+        }
+
+        if (_.isObject(instances)) {
+            instances = [instances];
+        }
+
+        Validate.isArray(instances, 'instances');
+
+        // Delete SQL statements corresponding to each record we want to delete from the table.
+        var deleteStatements = [];
+
+        var i;
+        for (i = 0; i < instances.length; i++) {
+            //ttodoshrirs: no need to enforce this. we should be able to delete based on whatever object is specified using that as a query.
+            Validate.isValidId(instances[i][idPropertyName], 'instances[' + i + '].' + idPropertyName);
+
+            deleteStatements.push(_.format("DELETE FROM {0} WHERE {1} = ? COLLATE NOCASE", tableName, idPropertyName));
+        }
+
+        this._db.transaction(function (transaction) {
+
+            var i;
+            for (i = 0; i < deleteStatements.length; i++) {
+                transaction.executeSql(deleteStatements[i], [ instances[i][idPropertyName] ]);
+            }
+        }, function (error) {
             callback(error);
+        }, function () {
+            callback();
         });
     });
 

@@ -63,6 +63,7 @@ Querying
 - case insensitivity
 - nothing found
 
+0 - for all APIs taking array as input, write test for empty array
 
 1 Additional: missing ID
 0 auto guid generation - table test
@@ -1026,7 +1027,7 @@ $testGroup('SQLiteStore tests')
         }).then(function () {
             return store.upsert(testTableName, { id: 'someid', prop1: 100, prop2: 200 });
         }).then(function () {
-            return store.del(testTableName, null);
+            return store.del(testTableName, { id: null, prop1: 100, prop2: 200 });
         }).then(function () {
             $assert.fail('failure expected');
         }, function (error) {
