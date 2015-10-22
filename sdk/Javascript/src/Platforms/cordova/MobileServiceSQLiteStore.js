@@ -99,7 +99,7 @@ var MobileServiceSQLiteStore = function (dbName) {
     this.upsert = Platform.async(function (tableName, instances, callback) {
         /// <summary>Updates or inserts one or more objects in the local table</summary>
         /// <param name="tableName">Name of the local table in which the object is to be upserted</param>
-        /// <param name="instance">Object OR array of objects to be inserted/updated in the table</param>
+        /// <param name="instances">Object OR array of objects to be inserted/updated in the table</param>
         /// <returns type="Promise">
         /// A promise that is resolved when the operation is completed successfully.
         /// If the operation fails, the promise is rejected
@@ -124,17 +124,18 @@ var MobileServiceSQLiteStore = function (dbName) {
             return;
         }
 
-        if (_.isObject(instances)) {
+        Validate.isObject(instances);
+
+        if (!_.isArray(instances)) {
             instances = [instances];
         }
 
-        Validate.isArray(instances, 'instances');
+        for (var i = 0; i < instances.length; i++) {
 
-        var i;
-        for (i = 0; i < instances.length; i++) {
-            Validate.isValidId(instances[i][idPropertyName], 'instances[' + i + '].' + idPropertyName);
-
-            instances[i] = SQLiteHelper.serialize(instances[i], columnDefinitions);
+            if (_.isNotNull(instances[i])) {
+                Validate.isValidId(instances[i][idPropertyName], 'instances[' + i + '].' + idPropertyName);
+                instances[i] = SQLiteHelper.serialize(instances[i], columnDefinitions);
+            }
         }
 
         // Note: The default maximum number of parameters allowed by sqlite is 999
@@ -247,58 +248,90 @@ var MobileServiceSQLiteStore = function (dbName) {
     });
 
     //TODO(shrirs): instance needs to be an array instead of an object
-    this.del = Platform.async(function (tableName, instances, callback) {
-        /// <summary>The items to delete from the local table</summary>
-        /// <param name="tableName">Name of the local table in which delete is to be performed</param>
-        /// <param name="instance">Object or an array of objects to delete from the table</param>
+    //ttodoshrirs: input should either be a queryjs object or an array of ids
+    //ttodoshrirs: update upstream table, synccontext methods in line with changes to this file
+    this.del = Platform.async(function (tableNameOrQuery, ids) {
+        /// <summary>Deletes records from the local table</summary>
+        /// <param name="tableNameOrQuery">Name of the local table in which delete is to be performed OR a queryjs object defining records to be deleted</param>
+        /// <param name="ids">A single ID or and array of IDs of records to be deleted. This argument is expected only if the first argument is table name</param>
         /// <returns type="Promise">
         /// A promise that is resolved when the operation is completed successfully.
         /// If the operation fails, the promise is rejected
         /// </returns>
 
-        // Ensure 'del' has been invoked with exactly 2 arguments.
-        // As Platform.async silently appends a callback argument to the original list of arguments,
-        // we expect the arugment length to be 3.
-        Validate.length(arguments, 3, 'arguments');
+        var tableName,
+            query,
+            callback = Array.prototype.pop.apply(arguments); // Extract the callback argument added by Platform.async.
 
-        Validate.isString(tableName, 'tableName');
-        Validate.notNullOrEmpty(tableName, 'tableName');
+        Validate.isFunction(callback);
+        Validate.notNull(tableNameOrQuery);
 
-        if (_.isNull(instances)) {
-            callback();
-            return;
+        if (_.isString(tableNameOrQuery)) {
+            Validate.notNullOrEmpty(tableNameOrQuery, 'tableNameOrQuery');
+            tableName = tableNameOrQuery;
+
+            if (_.isNull(ids)) {
+                callback();
+                return;
+            } else if (!_.isArray(ids)) {
+                // If a single id is specified, convert it to an array and proceed
+                ids = [ids];
+            }
+        } else if (_.isObject(tableNameOrQuery)) {
+            query = tableNameOrQuery;
+
+        } else {
+            throw _.format(
+                Platform.getResourceString("TypeCheckError"),
+                'tableNameOrQuery',
+                'Object or String',
+                typeof tableNameOrQuery);
         }
 
-        if (_.isObject(instances)) {
-            instances = [instances];
+        //ttodoshrirs: this is not javascript convention. suggestion: use last arg as callback and use the rest as tableName, instances, etc. do this for all methods in this file. also remove callback from param list? may be?
+
+        if (query) {
+            this.read(query).then(function (records) {
+
+                try {
+                    ids = records.map(function (record) {
+                        return records[idPropertyName];
+                    });
+                    deleteIds(query.getComponents().table, ids, callback);
+                } catch (error) {
+                    callback(error);
+                }
+            }, function (error) {
+                callback(error);
+            });
+        } else {
+            this._del(tableName, ids, callback);
         }
+    });
 
-        Validate.isArray(instances, 'instances');
-
+    // move this out of this or not? //ttodoshrirs
+    this._del = function (tableName, ids, callback) {
         // Delete SQL statements corresponding to each record we want to delete from the table.
         var deleteStatements = [];
 
-        var i;
-        for (i = 0; i < instances.length; i++) {
+        for (var i = 0; i < ids.length; i++) {
             //ttodoshrirs: no need to enforce this. we should be able to delete based on whatever object is specified using that as a query.
-            Validate.isValidId(instances[i][idPropertyName], 'instances[' + i + '].' + idPropertyName);
-
+            Validate.isValidId(ids[i]);
             deleteStatements.push(_.format("DELETE FROM {0} WHERE {1} = ? COLLATE NOCASE", tableName, idPropertyName));
         }
 
         this._db.transaction(function (transaction) {
-
-            var i;
             for (i = 0; i < deleteStatements.length; i++) {
-                transaction.executeSql(deleteStatements[i], [ instances[i][idPropertyName] ]);
+                transaction.executeSql(deleteStatements[i], [ids[i]]);
             }
         }, function (error) {
             callback(error);
         }, function () {
             callback();
         });
-    });
+    }
 
+    // move this out of this or not? //ttodoshrirs
     function getStatementParameters(statement) {
         var params = [];
 

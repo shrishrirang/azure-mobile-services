@@ -232,6 +232,30 @@ exports.isBool = function (value) {
     return !_.isNull(value) && (typeof value == 'boolean');
 };
 
+exports.isFunction = function (value) {
+    /// <summary>
+    /// Determine if a value is a function.
+    /// </summary>
+    /// <param name="value" type="Object">The value to check.</param>
+    /// <returns type="boolean">
+    /// True if the value is a function, false othwerise.
+    /// </returns>
+    return !_.isNull(value) && (typeof value == 'function');
+};
+
+//ttodoshrirs: add UTs for changes done to all files including validate and extensions.js
+exports.isArray = function (value) {
+    /// <summary>
+    /// Determine if a value is an array.
+    /// </summary>
+    /// <param name="value" type="Object">The value to check.</param>
+    /// <returns type="boolean">
+    /// True if the value is an array (or null), false othwerise.
+    /// </returns>
+
+    return !_.isNull(value) && (value.constructor === Array);
+};
+
 function classOf(value) {
     return Object.prototype.toString.call(value).slice(8, -1).toLowerCase();
 }
