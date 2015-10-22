@@ -8,6 +8,7 @@ var Platform = require('Platforms/Platform'),
     queryHelper = require('azure-mobile-apps/src/query'),
     SQLiteTypes = require('./SQLiteTypes'),
     SQLiteHelper = require('./SQLiteHelper'),
+    Query = require('query.js').Query,
     formatSql = require('azure-mobile-apps/src/data/sql/query/format');
 
 var idPropertyName = "id";
@@ -369,5 +370,6 @@ MobileServiceSQLiteStore.ColumnType = SQLiteTypes.ColumnType;
 
 // Export
 Platform.addToMobileServicesClientNamespace({ MobileServiceSQLiteStore: MobileServiceSQLiteStore });
+Platform.addToMobileServicesClientNamespace({ Query: Query });
 
 exports.MobileServiceSQLiteStore = MobileServiceSQLiteStore;

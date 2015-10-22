@@ -72,7 +72,7 @@ Querying
 0 raw verification using direct sql statements
 1 redefine table (define twice)
 redefinetable: make sure database is read as is without conversion if definetable does not have a corresponding column
-id column type: array? allowed? 
+0 id column type: array? allowed?  -> No
 test: string to int conversion. managed supports it.
 do date testing;
 write undefined , null values to store tables
@@ -1119,9 +1119,133 @@ $testGroup('SQLiteStore tests')
             $assert.fail('failure expected');
         }, function (error) {
         });
+    }),
+
+    $test('read: Read entire table')
+    .checkAsync(function () {
+        var store = createStore(),
+            rows = createTestRows(5);
+
+        return createTestTable(store, rows).then(function () {
+            return store.read(new Query(testTableName));
+        }).then(function (results) {
+            $assert.areEqual(results, rows);
+        }, function (error) {
+            $assert.fail(error);
+        });
+    }),
+
+    $test('read: select: basic')
+    .checkAsync(function () {
+        var store = createStore(),
+            rows = createTestRows(2);
+
+        return createTestTable(store, rows).then(function () {
+            var query = new Query(testTableName);
+            return store.read(query.select('str', 'int'));
+        }).then(function (results) {
+            $assert.areEqual(results, rows.map(function(obj) {
+                return {
+                    str: obj.str,
+                    int: obj.int
+                }
+            }));
+        }, function (error) {
+            $assert.fail(error);
+        });
+    }),
+
+    $test('read: select: invalid columns')
+    .checkAsync(function () {
+        var store = createStore(),
+            rows = createTestRows(2);
+
+        return createTestTable(store, rows).then(function () {
+            var query = new Query(testTableName);
+            return store.read(query.select('invalid'));
+        }).then(function (results) {
+            $assert.fail('failure expected');
+        }, function (error) {
+        });
+    }),
+
+    $test('read: select: no params')
+    .checkAsync(function () {
+        var store = createStore(),
+            rows = createTestRows(2);
+
+        return createTestTable(store, rows).then(function () {
+            var query = new Query(testTableName);
+            return store.read(query.select());
+        }).then(function (results) {
+            $assert.fail('failure expected');
+        }, function (error) {
+        });
+    }),
+
+    $test('read: select: select same columns more than once')
+    .checkAsync(function () {
+        var store = createStore(),
+            rows = createTestRows(2);
+
+        return createTestTable(store, rows).then(function () {
+            var query = new Query(testTableName);
+            return store.read(query.select('id', 'id', 'str', 'str'));
+        }).then(function (results) {
+            $assert.areEqual(results, rows.map(function (obj) {
+                return {
+                    id: obj.id,
+                    str: obj.str
+                }
+            }));
+        }, function (error) {
+            $assert.fail(error);
+        });
     })
 );
 
 function createStore() {
     return new WindowsAzure.MobileServiceSQLiteStore(testDbFile);
+}
+
+function createTestRows(rowCount) {
+    var rows = [],
+        i;
+
+    for (i = 1; i <= rowCount; i++) {
+        rows.push({
+            id: i,
+            int: 100 + i,
+            str: 'text' + i
+        });
+    }
+
+    return rows;
+}
+
+function chain(promise, store, row) {
+    return promise.then(function () {
+        return store.upsert(testTableName, row);
+    });
+}
+
+//ttodoshrirs: re work this function after upsert supports array as param
+function createTestTable(store, rows) {
+    var x = 1;
+    x = x;
+    var result = store.defineTable({
+        name: testTableName,
+        columnDefinitions: {
+            id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Int,
+            int: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Int,
+            str: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text
+        }
+    });
+
+    var i;
+    for (i = 0; i < rows.length; i++) {
+        result = chain(result, store, rows[i]);
+    }
+
+    return result;
 }
