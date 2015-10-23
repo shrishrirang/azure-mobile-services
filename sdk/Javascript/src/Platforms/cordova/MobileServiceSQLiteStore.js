@@ -143,13 +143,16 @@ var MobileServiceSQLiteStore = function (dbName) {
         // TODO(shrirs): Add support for tables with more than 999 columns
 
         // Insert and update SQL statements and their parameters corresponding to each record we want to insert/update in the table.
-        var insertStatements = [],
-            updateStatements = [],
-            insertParameters = [],
-            updateParameters = [];
+        var statements = [],
+            parameters = [];
 
         var columnNames, columnParams, updateClause, insertValues, updateValues, property, instance;
         for (i = 0; i < instances.length; i++) {
+
+            if (_.isNull(instances[i])) {
+                continue;
+            }
+                
             columnNames = '';
             columnParams = '';
             updateClause = '';
@@ -178,21 +181,20 @@ var MobileServiceSQLiteStore = function (dbName) {
                 insertValues.push(instance[property]);
             }
 
-            updateValues.push(instance[idPropertyName]);
+            statements.push(_.format("INSERT OR IGNORE INTO {0} ({1}) VALUES ({2})", tableName, columnNames, columnParams));
+            parameters.push(insertValues);
 
-            insertStatements.push(_.format("INSERT OR IGNORE INTO {0} ({1}) VALUES ({2})", tableName, columnNames, columnParams));
-            updateStatements.push(_.format("UPDATE {0} SET {1} WHERE {2} = ? COLLATE NOCASE", tableName, updateClause, idPropertyName));
-
-            insertParameters.push(insertValues);
-            updateParameters.push(updateValues);
+            if (updateValues.length > 0) {
+                statements.push(_.format("UPDATE {0} SET {1} WHERE {2} = ? COLLATE NOCASE", tableName, updateClause, idPropertyName));
+                updateValues.push(instance[idPropertyName]);
+                parameters.push(updateValues);
+            }
         }
 
         this._db.transaction(function (transaction) {
 
-            var i;
-            for (i = 0; i < insertParameters.length; i++) {
-                transaction.executeSql(insertStatements[i], insertParameters[i]);
-                transaction.executeSql(updateStatements[i], updateParameters[i]);
+            for (var i = 0; i < statements.length; i++) {
+                transaction.executeSql(statements[i], parameters[i]);
             }
         }, function (error) {
             callback(error);

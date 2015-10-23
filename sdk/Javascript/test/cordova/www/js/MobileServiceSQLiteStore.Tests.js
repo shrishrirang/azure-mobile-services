@@ -77,9 +77,9 @@ Querying
 redefinetable: make sure database is read as is without conversion if definetable does not have a corresponding column
 0 id column type: array? allowed?  -> No
 test: string to int conversion. managed supports it.
-do date testing;
-write undefined , null values to store tables
-single column: the ID column. currently it fails.
+1 do date testing;
+1 write undefined , null values to store tables
+1 single column: the ID column. currently it fails.
 */
 
 $testGroup('SQLiteStore tests')
@@ -98,20 +98,41 @@ $testGroup('SQLiteStore tests')
     .checkAsync(function () {
         var store = createStore(),
             row = { id: 101, price: 51.5 };
-            
+
         return store.defineTable({
             name: testTableName,
             columnDefinitions: {
                 id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer,
                 price: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
-            } 
-        }).then(function() {
+            }
+        }).then(function () {
             return store.upsert(testTableName, row);
-        }).then(function() {
+        }).then(function () {
             return store.lookup(testTableName, row.id);
-        }).then(function(result) {
+        }).then(function (result) {
             $assert.areEqual(result, row);
-        }, function(error) {
+        }, function (error) {
+            $assert.fail(error);
+        });
+    }),
+
+    $test('defineTable: single column')
+    .checkAsync(function () {
+        var store = createStore(),
+            row = { id: 101 };
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer
+            }
+        }).then(function () {
+            return store.upsert(testTableName, row);
+        }).then(function () {
+            return store.lookup(testTableName, row.id);
+        }).then(function (result) {
+            $assert.areEqual(result, row);
+        }, function (error) {
             $assert.fail(error);
         });
     }),
@@ -648,6 +669,29 @@ $testGroup('SQLiteStore tests')
         });
     }),
 
+    $test('upsert: array of records, all having the same id')
+    .checkAsync(function () {
+        var store = createStore(),
+            rows = [{ id: 't1', description: 'description1', price: 5 }, { id: 't1', description: 'description2' }];
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text,
+                description: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                price: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer
+            }
+        }).then(function () {
+            return store.upsert(testTableName, rows);
+        }).then(function () {
+            return store.read(new Query(testTableName));
+        }).then(function (result) {
+            $assert.areEqual(result, [{ id: 't1', description: 'description2', price: 5 }]);
+        }, function (error) {
+            $assert.fail(error);
+        });
+    }),
+
     $test('upsert: adding record with columns that are not defined should fail')
     .checkAsync(function () {
         var store = createStore(),
@@ -716,13 +760,95 @@ $testGroup('SQLiteStore tests')
             return store.upsert(testTableName, { id: 'abc', description: 'new' });
         }).then(function () {
             // lookup record using upper cased id
-            return store.lookup(testTableName, 'ABC'); 
+            return store.lookup(testTableName, 'ABC');
         }).then(function (result) {
             $assert.areEqual(result, { id: 'ABC', description: 'new' });
             // lookup record using lower cased id
             return store.lookup(testTableName, 'abc');
         }).then(function (result) {
             $assert.areEqual(result, { id: 'ABC', description: 'new' });
+        }, function (error) {
+            $assert.fail(error);
+        });
+    }),
+
+    $test('upsert: insert array of records with null values')
+    .checkAsync(function () {
+        var store = createStore(),
+            row = { id: 'ABC', description: 'something' };
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text,
+                description: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String
+            }
+        }).then(function () {
+            return store.upsert(testTableName, [null, row]);
+        }).then(function () {
+            return store.lookup(testTableName, row.id);
+        }).then(function (result) {
+            $assert.areEqual(result, row);
+        }, function (error) {
+            $assert.fail(error);
+        });
+    }),
+
+    $test('upsert: empty array')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text,
+                description: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String
+            }
+        }).then(function () {
+            return store.upsert(testTableName, []);
+        }).then(function () {
+        }, function (error) {
+            $assert.fail(error);
+        });
+    }),
+
+    $test('upsert: record is null')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text,
+                description: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String
+            }
+        }).then(function () {
+            return store.upsert(testTableName, null);
+        }).then(function () {
+            return store.read(new Query(testTableName));
+        }).then(function (result) {
+            $assert.areEqual(result, []);
+        }, function (error) {
+            $assert.fail(error);
+        });
+    }),
+
+    $test('upsert: record is undefined')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text,
+                description: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String
+            }
+        }).then(function () {
+            return store.upsert(testTableName, undefined);
+        }).then(function () {
+            return store.read(new Query(testTableName));
+        }).then(function (result) {
+            $assert.areEqual(result, []);
         }, function (error) {
             $assert.fail(error);
         });
@@ -1065,6 +1191,24 @@ $testGroup('SQLiteStore tests')
             return store.read(new Query(testTableName));
         }).then(function (result) {
             $assert.areEqual(result, [row]);
+        }, function (error) {
+            $assert.fail(error);
+        });
+    }),
+
+    $test('delete: empty array')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text,
+                description: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String
+            }
+        }).then(function () {
+            return store.del(testTableName, []);
+        }).then(function () {
         }, function (error) {
             $assert.fail(error);
         });
@@ -1469,9 +1613,18 @@ $testGroup('SQLiteStore tests')
     $test('read: Read entire table')
     .checkAsync(function () {
         var store = createStore(),
-            rows = createTestRows(5);
+            rows = [{ id: 1, int: 101, str: 'text1' }, { id: 2, int: 102, str: 'text2' }];
 
-        return createTestTable(store, rows).then(function () {
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Int,
+                int: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Int,
+                str: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text
+            }
+        }).then(function () {
+            return store.upsert(testTableName, rows);
+        }).then(function () {
             return store.read(new Query(testTableName));
         }).then(function (results) {
             $assert.areEqual(results, rows);
@@ -1480,60 +1633,75 @@ $testGroup('SQLiteStore tests')
         });
     }),
 
-    $test('read: select: basic')
+    $test('read: simple select')
     .checkAsync(function () {
         var store = createStore(),
-            rows = createTestRows(2);
+            rows = [{ id: 1, int: 101, str: 'text1' }];
 
-        return createTestTable(store, rows).then(function () {
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Int,
+                int: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Int,
+                str: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text
+            }
+        }).then(function () {
+            return store.upsert(testTableName, rows);
+        }).then(function () {
             var query = new Query(testTableName);
             return store.read(query.select('str', 'int'));
         }).then(function (results) {
-            $assert.areEqual(results, rows.map(function(obj) {
+            $assert.areEqual(results, rows.map(function (obj) {
                 return {
                     str: obj.str,
                     int: obj.int
                 }
             }));
         }, function (error) {
-            $assert.fail(error);
         });
     }),
 
-    $test('read: select: invalid columns')
+    $test('read: select invalid columns')
     .checkAsync(function () {
         var store = createStore(),
-            rows = createTestRows(2);
+            row = { id: 1, int: 101, str: 'text1' };
 
-        return createTestTable(store, rows).then(function () {
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Int,
+                int: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Int,
+                str: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text
+            }
+        }).then(function () {
+            return store.upsert(testTableName, row);
+        }).then(function () {
             var query = new Query(testTableName);
-            return store.read(query.select('invalid'));
+            return store.read(query.select('invalid column'));
         }).then(function (results) {
             $assert.fail('failure expected');
         }, function (error) {
         });
     }),
 
-    $test('read: select: no params')
+    $test('read: select same columns more than once')
     .checkAsync(function () {
         var store = createStore(),
-            rows = createTestRows(2);
+            row1 = { id: 1, int: 101, str: 'text1' },
+            row2 = { id: 2, int: 102, str: 'text2' },
+            row3 = { id: 3, int: 103, str: 'text3' },
+            rows = [row1, row2, row3];
 
-        return createTestTable(store, rows).then(function () {
-            var query = new Query(testTableName);
-            return store.read(query.select());
-        }).then(function (results) {
-            $assert.fail('failure expected');
-        }, function (error) {
-        });
-    }),
-
-    $test('read: select: select same columns more than once')
-    .checkAsync(function () {
-        var store = createStore(),
-            rows = createTestRows(2);
-
-        return createTestTable(store, rows).then(function () {
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Int,
+                int: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Int,
+                str: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text
+            }
+        }).then(function () {
+            return store.upsert(testTableName, rows);
+        }).then(function () {
             var query = new Query(testTableName);
             return store.read(query.select('id', 'id', 'str', 'str'));
         }).then(function (results) {
@@ -1546,6 +1714,26 @@ $testGroup('SQLiteStore tests')
         }, function (error) {
             $assert.fail(error);
         });
+    }),
+
+    $test('read: query referencing non-existent table')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.read(new Query('nonexistenttable')).then(function (results) {
+            $assert.fail('failure expected');
+        }, function (error) {
+        });
+    }),
+
+    $test('read: query referencing invalid table name')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.read(new Query('*')).then(function (results) {
+            $assert.fail('failure expected');
+        }, function (error) {
+        });
     })
 );
 
@@ -1553,44 +1741,3 @@ function createStore() {
     return new WindowsAzure.MobileServiceSQLiteStore(testDbFile);
 }
 
-function createTestRows(rowCount) {
-    var rows = [],
-        i;
-
-    for (i = 1; i <= rowCount; i++) {
-        rows.push({
-            id: i,
-            int: 100 + i,
-            str: 'text' + i
-        });
-    }
-
-    return rows;
-}
-
-function chain(promise, store, row) {
-    return promise.then(function () {
-        return store.upsert(testTableName, row);
-    });
-}
-
-//ttodoshrirs: re work this function after upsert supports array as param
-function createTestTable(store, rows) {
-    var x = 1;
-    x = x;
-    var result = store.defineTable({
-        name: testTableName,
-        columnDefinitions: {
-            id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Int,
-            int: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Int,
-            str: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text
-        }
-    });
-
-    var i;
-    for (i = 0; i < rows.length; i++) {
-        result = chain(result, store, rows[i]);
-    }
-
-    return result;
-}
