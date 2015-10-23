@@ -62,13 +62,13 @@ $testGroup('MobileServiceClient._request',
         return Platform.async(client._request).call(client, 'DELETE', 'foo', null);
     }),
 
-    $test('no content')
+    $test('no content')//ttodoshrirs
     .description('Verify _request sets no Content-Type header for no content')
     .checkAsync(function () {
         var client = new WindowsAzure.MobileServiceClient("http://www.windowsazure.com/", "http://www.gateway.com/", "123456abcdefg");
         client = client.withFilter(function (req, next, callback) {
             $assert.areEqual(req.headers['Content-Type'], undefined);
-            $assert.areEqual(req.data, undefined);
+            $assert.areEqual(req.data, null);
             callback(null, { status: 200, responseText: null });
         });
 
