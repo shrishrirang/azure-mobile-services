@@ -42,15 +42,15 @@ Lookup (id of different data types)
 
 1 Insert (id of different data types)
 0 - insert: double insert failure testing  (Table UT)
-0 - Call without params or wrong params
+1 - Call without params or wrong params
 
 Upsert (id of different data types)
 1 - upsert something that exists
 1 - upsert something that does not exist
 1- Call without params or wrong params
 //ttodoshrirs: upsert without id.
-0 - update returns inserted item: table test
-0 - upsert without id specified
+1 - update returns inserted item: table test
+1 - upsert without id specified
 
 Delete (id of different data types)
 1- delete something that does not exist
@@ -65,7 +65,7 @@ Querying
 - case insensitivity
 - nothing found
 
-0 - for all APIs taking array as input, write test for empty array
+1 - for all APIs taking array as input, write test for empty array
 
 1 Additional: missing ID
 0 auto guid generation - table test
@@ -75,7 +75,7 @@ Querying
 0 raw verification using direct sql statements
 1 redefine table (define twice)
 redefinetable: make sure database is read as is without conversion if definetable does not have a corresponding column
-0 id column type: array? allowed?  -> No
+1 id column type: array? allowed?  -> No
 test: string to int conversion. managed supports it.
 1 do date testing;
 1 write undefined , null values to store tables
@@ -216,6 +216,78 @@ $testGroup('SQLiteStore tests')
         return createStore().defineTable(tableDefinition).then(function () {
             $assert.fail('test should fail');
         }, function (error) {
+        });
+    }),
+
+    $test('defineTable: primary key int')
+    .checkAsync(function () {
+        var store = createStore(),
+            row1 = { id: 1, str: 'str1'},
+            row2 = { id: 1, str: 'str2' },
+            tableDefinition = {
+                name: testTableName,
+                columnDefinitions: {
+                    id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer,
+                    str: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text
+                }
+            };
+
+        return store.defineTable(tableDefinition).then(function() {
+            return store.upsert(testTableName, [row1, row2]);
+        }).then(function() {
+            return store.read(new Query(testTableName));
+        }).then(function(result) {
+            $assert.areEqual(result, [row2]);
+        }, function(error) {
+            $assert.areEqual(error);
+        });
+    }),
+
+    $test('defineTable: primary key real')
+    .checkAsync(function () {
+        var store = createStore(),
+            row1 = { id: 1.1, str: 'str1' },
+            row2 = { id: 1.1, str: 'str2' },
+            tableDefinition = {
+                name: testTableName,
+                columnDefinitions: {
+                    id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real,
+                    str: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text
+                }
+            };
+
+        return store.defineTable(tableDefinition).then(function () {
+            return store.upsert(testTableName, [row1, row2]);
+        }).then(function () {
+            return store.read(new Query(testTableName));
+        }).then(function (result) {
+            $assert.areEqual(result, [row2]);
+        }, function (error) {
+            $assert.areEqual(error);
+        });
+    }),
+
+    $test('defineTable: primary key string')
+    .checkAsync(function () {
+        var store = createStore(),
+            row1 = { id: '1', str: 'str1'},
+            row2 = { id: '1', str: 'str2' },
+            tableDefinition = {
+                name: testTableName,
+                columnDefinitions: {
+                    id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                    str: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text
+                }
+            };
+
+        return store.defineTable(tableDefinition).then(function() {
+            return store.upsert(testTableName, [row1, row2]);
+        }).then(function() {
+            return store.read(new Query(testTableName));
+        }).then(function(result) {
+            $assert.areEqual(result, [row2]);
+        }, function(error) {
+            $assert.areEqual(error);
         });
     }),
 
@@ -992,7 +1064,7 @@ $testGroup('SQLiteStore tests')
         });
     }),
 
-    $test('upsert: invoked with extra parameters')
+    $test('upsert: invoked with tableName and extra parameters')
     .description('Check that promise returned by upsert is either resolved or rejected even when invoked with extra parameters')
     .checkAsync(function () {
         var store = createStore();
@@ -1454,7 +1526,7 @@ $testGroup('SQLiteStore tests')
         });
     }),
 
-    $test('delete: invoked with extra parameters')
+    $test('delete: invoked with table name and extra parameters')
     .description('Check that promise returned by upsert is either resolved or rejected even when invoked with extra parameters')
     .checkAsync(function () {
         var store = createStore(),
@@ -1605,6 +1677,34 @@ $testGroup('SQLiteStore tests')
             return store.read(new Query(testTableName));
         }).then(function (result) {
             $assert.areEqual(result, [row1, row2]);
+        }, function (error) {
+            $assert.fail(error);
+        });
+    }),
+
+    $test('delete: invoked with query and extra parameters')
+    .description('Check that promise returned by upsert is either resolved or rejected even when invoked with extra parameters')
+    .checkAsync(function () {
+        var store = createStore(),
+            row1 = { id: 'someid1', prop1: 100, prop2: 200 },
+            row2 = { id: 'someid2', prop1: 100, prop2: 200 },
+            row3 = { id: 'someid3', prop1: 100, prop2: 200 };
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                prop1: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real,
+                prop2: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+            }
+        }).then(function () {
+            return store.upsert(testTableName, [row1, row2, row3]);
+        }).then(function () {
+            return store.del(new Query(testTableName), 'extra param');
+        }).then(function () {
+            return store.read(new Query(testTableName));
+        }).then(function (result) {
+            $assert.areEqual(result, []);
         }, function (error) {
             $assert.fail(error);
         });
