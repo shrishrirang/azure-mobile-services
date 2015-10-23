@@ -1180,7 +1180,38 @@ $testGroup('SQLiteStore tests')
             return store.del(testTableName, { id: 'this object is an invalid id' });
         }).then(function () {
             testError = 'delete should have failed';
-        }, function(error) {
+        }, function (error) {
+            return store.read(new Query(testTableName));
+        }).then(function (result) {
+            $assert.isNull(testError);
+            $assert.areEqual(result, [row]);
+        }, function (error) {
+            $assert.isNull(testError);
+            $assert.fail(error);
+        });
+    }),
+
+    $test('delete: array of ids containing an invalid id')
+    .checkAsync(function () {
+        var store = createStore(),
+            row = { id: 'validid', prop1: 100, prop2: 200 },
+            testError;
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                prop1: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real,
+                prop2: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+            }
+        }).then(function () {
+            return store.upsert(testTableName, row);
+        }).then(function (result) {
+            // Specify an array of ids to delete
+            return store.del(testTableName, [{ id: 'this object is an invalid id' }, 'validid']);
+        }).then(function () {
+            testError = 'delete should have failed';
+        }, function (error) {
             return store.read(new Query(testTableName));
         }).then(function (result) {
             $assert.isNull(testError);
@@ -1195,7 +1226,9 @@ $testGroup('SQLiteStore tests')
     .description('Check that promise returned by upsert is either resolved or rejected even when invoked with extra parameters')
     .checkAsync(function () {
         var store = createStore(),
-            row = { id: 'someid', prop1: 100, prop2: 200 };
+            row1 = { id: 'someid1', prop1: 100, prop2: 200 },
+            row2 = { id: 'someid2', prop1: 100, prop2: 200 },
+            row3 = { id: 'someid3', prop1: 100, prop2: 200 };
 
         return store.defineTable({
             name: testTableName,
@@ -1205,10 +1238,21 @@ $testGroup('SQLiteStore tests')
                 prop2: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
             }
         }).then(function () {
-            return store.upsert(testTableName, row);
+            return store.upsert(testTableName, [row1, row2, row3]);
         }).then(function () {
-            return store.del(testTableName, [row.id], 'extra param');
+            // Specify a single id to delete
+            return store.del(testTableName, row1.id, 'extra param');
         }).then(function () {
+            return store.read(new Query(testTableName));
+        }).then(function (result) {
+            $assert.areEqual(result, [row2, row3]);
+        }).then(function () {
+            // Specify an array of ids to delete
+            return store.del(testTableName, [row2.id, row3.id], 'extra param');
+        }).then(function () {
+            return store.read(new Query(testTableName));
+        }).then(function (result) {
+            $assert.areEqual(result, []);
         }, function (error) {
             $assert.fail(error);
         });
