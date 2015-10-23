@@ -1222,6 +1222,94 @@ $testGroup('SQLiteStore tests')
         });
     }),
 
+    $test('delete: null table name')
+    .checkAsync(function () {
+        var store = createStore(),
+            row = { id: 'validid', prop1: 100, prop2: 200 };
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                prop1: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real,
+                prop2: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+            }
+        }).then(function () {
+            return store.upsert(testTableName, row);
+        }).then(function () {
+            return store.del(null, 'validid');
+        }).then(function () {
+            $assert.fail('failure expected');
+        }, function (error) {
+        });
+    }),
+
+    $test('delete: undefined table name')
+    .checkAsync(function () {
+        var store = createStore(),
+            row = { id: 'validid', prop1: 100, prop2: 200 };
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                prop1: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real,
+                prop2: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+            }
+        }).then(function () {
+            return store.upsert(testTableName, row);
+        }).then(function () {
+            return store.del(undefined, 'validid');
+        }).then(function () {
+            $assert.fail('failure expected');
+        }, function (error) {
+        });
+    }),
+
+    $test('delete: empty table name')
+    .checkAsync(function () {
+        var store = createStore(),
+            row = { id: 'validid', prop1: 100, prop2: 200 };
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                prop1: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real,
+                prop2: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+            }
+        }).then(function () {
+            return store.upsert(testTableName, row);
+        }).then(function () {
+            return store.del('', 'validid');
+        }).then(function () {
+            $assert.fail('failure expected');
+        }, function (error) {
+        });
+    }),
+
+    $test('delete: invalid table name')
+    .checkAsync(function () {
+        var store = createStore(),
+            row = { id: 'validid', prop1: 100, prop2: 200 };
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                prop1: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real,
+                prop2: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+            }
+        }).then(function () {
+            return store.upsert('*', row);
+        }).then(function () {
+            return store.del(undefined, 'validid');
+        }).then(function () {
+            $assert.fail('failure expected');
+        }, function (error) {
+        });
+    }),
+
     $test('delete: invoked with extra parameters')
     .description('Check that promise returned by upsert is either resolved or rejected even when invoked with extra parameters')
     .checkAsync(function () {
