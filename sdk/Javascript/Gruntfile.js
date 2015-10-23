@@ -103,6 +103,10 @@ module.exports = function(grunt) {
         src: 'src/Generated/MobileServices.Web.js',
         dest: 'src/Generated/MobileServices.Web.min.js'
       },
+      cordova: {
+        src: 'src/Generated/MobileServices.Cordova.js',
+        dest: 'src/Generated/MobileServices.Cordova.min.js'
+      },
       winjs: {
         src: 'src/Generated/MobileServices.js',
         dest: 'src/Generated/MobileServices.min.js'
@@ -183,7 +187,7 @@ module.exports = function(grunt) {
             src: [
                 './test/web/js/TestFrameworkAdapter.js',
                 './test/web/js/TestClientHelper.js',
-                './test/cordova/www/js/offlineTests.js',
+                './test/cordova/www/js/MobileServiceSQLiteStore.Tests.js',
                 '<%= files.testcore %>'
             ],
             dest: './test/cordova/www/js/Generated/Tests.js',
@@ -205,7 +209,7 @@ module.exports = function(grunt) {
     },
     watch: {
         files: '<%= files.all %>',
-        tasks: ['concat', 'uglify', 'copy', 'browserify', 'jshint']
+        tasks: ['concat', 'browserify', 'uglify', 'copy', 'jshint']
     }
   });
 

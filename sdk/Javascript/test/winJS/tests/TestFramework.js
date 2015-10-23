@@ -165,6 +165,16 @@ global.$testGroup = function (name) {
             return wrapper.tag('Functional');
         },
 
+        beforeEachAsync: function (action) {
+            wrapper.beforeEachAction = action;
+            return wrapper;
+        },
+
+        afterEachAsync: function (action) {
+            wrapper.afterEachAction = action;
+            return wrapper;
+        },
+
         tests: function () {
             /// <summary>
             /// Add tests to the test group.
@@ -180,6 +190,8 @@ global.$testGroup = function (name) {
             // the group by unwrapping them
             for (var i = 0; i < arguments.length; i++) {
                 var test = arguments[i].getTest();
+                arguments[i].beforeEachAction = wrapper.beforeEachAction;
+                arguments[i].afterEachAction = wrapper.afterEachAction;
                 group.methods.append(test);
 
                 // If the test group was marked as excluded before this test
@@ -262,7 +274,7 @@ global.$test = function (name) {
             /// <returns type="Objet">The test group wrapper.</returns>
 
             for (var i = 0; i < arguments.length; i++) {
-                test.tags.append(arguments[i]);                
+                test.tags.append(arguments[i]);
             }
 
             return wrapper;
@@ -276,18 +288,44 @@ global.$test = function (name) {
             /// The action to invoke which will perform the tests.
             /// </param>
             /// <returns type="Object">The test method wrapper.</returns>
-            
+
             // We have to wrap the test in an async operation so it can be
             // invoked from C#.
             var delegate = new Microsoft.Azure.Zumo.Win8.Test.WinJS.PromiseAsyncExecution();
             delegate.onexecute = function (args) {
                 try {
-                    // Invoke the action and return control to the test
+                    // Invoke beforeEachAction, test method and afterEachAction and then return control to the test
                     // framework when complete
-                    action();
-                    window.setTimeout(function () { args.complete(); }, 0);
-                } catch (e) {
-                    window.setTimeout(function () { args.error(e.toString()); }, 0);
+                    if (wrapper.beforeEachAction) {
+                        wrapper.beforeEachAction()
+                            .then(function () {
+                                return action();
+                            })
+                            .then(function () {
+                                if (wrapper.afterEachAction) {
+                                    return wrapper.afterEachAction();
+                                }
+                            })
+                            .done(function () {
+                                args.complete();
+                            }, function (err) {
+                                args.error(err.toString());
+                            });
+                    } else {
+                        action();
+                        if (wrapper.afterEachAction) {
+                            wrapper.afterEachAction()
+                                .then(function () {
+                                    args.complete();
+                                }, function (err) {
+                                    args.error(err.toString());
+                                });
+                        } else {
+                            args.complete();
+                        }
+                    }
+                } catch (err) {
+                    window.setTimeout(function () { args.error(err.toString()); }, 0);
                 }
             };
             test.test = delegate;
@@ -307,9 +345,42 @@ global.$test = function (name) {
             delegate.onexecute = function (args) {
                 // Get the promise (and start the async operation) and return
                 // control to the test harness when it's finished.
-                getPromise().done(
-                    function () { args.complete(); },
-                    function (err) { args.error(err.toString()); });
+
+                try {
+                    // Invoke beforeEachAction, test method and afterEachAction and then return control to the test
+                    // framework when complete
+                    if (wrapper.beforeEachAction) {
+                        wrapper.beforeEachAction()
+                            .then(function () {
+                                return getPromise();
+                            })
+                            .then(function () {
+                                if (wrapper.afterEachAction) {
+                                    return wrapper.afterEachAction();
+                                }
+                            })
+                            .done(function () {
+                                args.complete();
+                            }, function (err) {
+                                args.error(err.toString());
+                            });
+                    } else {
+                        getPromise()
+                            .then(function () {
+                                if (wrapper.afterEachAction) {
+                                    return wrapper.afterEachAction();
+                                }
+                            })
+                            .done(function () {
+                                args.complete();
+                            }, function (err) {
+                                args.error(err.toString());
+                            });
+                    }
+                } catch (err) {
+                    window.setTimeout(function () { args.error(err.toString()); }, 0);
+                }
+
             };
             test.test = delegate;
             return wrapper;
