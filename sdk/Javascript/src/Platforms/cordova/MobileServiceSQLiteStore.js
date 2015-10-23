@@ -295,8 +295,6 @@ var MobileServiceSQLiteStore = function (dbName) {
                 typeof tableNameOrQuery);
         }
 
-        //ttodoshrirs: this is not javascript convention. suggestion: use last arg as callback and use the rest as tableName, instances, etc. do this for all methods in this file. also remove callback from param list? may be?
-
         if (query) {
             var self = this;
             this.read(query).then(function (result) {
@@ -322,9 +320,9 @@ var MobileServiceSQLiteStore = function (dbName) {
         }
     });
 
-    // move this out of this or not? //ttodoshrirs
     this._del = function (tableName, ids, callback) {
-        // Delete SQL statements corresponding to each record we want to delete from the table.
+
+        // SQL DELETE statements corresponding to each record we want to delete from the table.
         var deleteStatements = [],
             deleteParams = [];
 
@@ -345,19 +343,6 @@ var MobileServiceSQLiteStore = function (dbName) {
         }, function () {
             callback();
         });
-    }
-
-    // move this out of this or not? //ttodoshrirs
-    function getStatementParameters(statement) {
-        var params = [];
-
-        if (statement.parameters) {
-            statement.parameters.forEach(function (param) {
-                params.push(param.value);
-            });
-        }
-
-        return params;
     }
 
     this.read = Platform.async(function (query, callback) {
@@ -428,6 +413,18 @@ var MobileServiceSQLiteStore = function (dbName) {
         });
     });
 };
+
+function getStatementParameters(statement) {
+    var params = [];
+
+    if (statement.parameters) {
+        statement.parameters.forEach(function (param) {
+            params.push(param.value);
+        });
+    }
+
+    return params;
+}
 
 function createTable(transaction, tableDefinition) {
     var columnDefinitions = tableDefinition.columnDefinitions;
