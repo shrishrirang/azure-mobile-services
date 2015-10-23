@@ -16,72 +16,6 @@ var testServiceKey = 'key';
 var testTableName = 'items';
 var testDbFile = 'test101.db';
 
-/*
-ttodoshrirs:
-//ttodoshrirs: add description to tests wherever needed
-//ttodoshrirs: case insensitive id operations
-    
-DefineTable
-1- define a table, add data to it, read it to check table was created
-1- define a table, add data, add new columns using definetable again:
-1 - read old data. check old data is augmented with null valued columns
-* - add new data. read new data. check that new columns exist.
-1- try adding columns values that are not defined
-0 - define table with primary key of different data types, add those values, read those values
-1 - store operations when define is not performed yet.
-
-ttodoshrirs: empty table name
-
-Serialization
-1- make sure serializing data of all supported types and deserializing again results in original values
-
-Lookup (id of different data types)
-1 - lookup: insert something, read it. something can be of all supported data types? does ID as object make sense?
-1 - lookup: look for something that does not exist
-1 - Call without params or wrong params
-
-1 Insert (id of different data types)
-0 - insert: double insert failure testing  (Table UT)
-1 - Call without params or wrong params
-
-Upsert (id of different data types)
-1 - upsert something that exists
-1 - upsert something that does not exist
-1- Call without params or wrong params
-//ttodoshrirs: upsert without id.
-1 - update returns inserted item: table test
-1 - upsert without id specified
-
-Delete (id of different data types)
-1- delete something that does not exist
-1 - delete something that exists: id of different data types
-1- Call without params or wrong params
-
-Querying
-- ['where', 'select', 'orderBy', 'orderByDescending', 'skip', 'take', 'includeTotalCount'];
-- skip/take beyond count
-- negative skip, negative take
-- Call without params or wrong params
-- case insensitivity
-- nothing found
-
-1 - for all APIs taking array as input, write test for empty array
-
-1 Additional: missing ID
-0 auto guid generation - table test
-1 invalid tabledefinition (missing name, invalid column type)
-1 try to insert column that does not exist in table definition
-1 invalid datatypes (column is int, but row contains string, etc)
-0 raw verification using direct sql statements
-1 redefine table (define twice)
-redefinetable: make sure database is read as is without conversion if definetable does not have a corresponding column
-1 id column type: array? allowed?  -> No
-test: string to int conversion. managed supports it.
-1 do date testing;
-1 write undefined , null values to store tables
-1 single column: the ID column. currently it fails.
-*/
-
 $testGroup('SQLiteStore tests')
     .beforeEachAsync(Platform.async( function(callback) {
         var db = window.sqlitePlugin.openDatabase({ name: testDbFile });
@@ -656,6 +590,78 @@ $testGroup('SQLiteStore tests')
         });
     }),
 
+    $test('lookup: null table name')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text,
+                description: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String
+            }
+        }).then(function () {
+            return store.lookup(null, [{ id: 'something', description: 'something' }]);
+        }).then(function () {
+            $assert.fail('failure expected');
+        }, function (error) {
+        });
+    }),
+
+    $test('lookup: undefined table name')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text,
+                description: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String
+            }
+        }).then(function () {
+            return store.lookup(undefined, [{ id: 'something', description: 'something' }]);
+        }).then(function () {
+            $assert.fail('failure expected');
+        }, function (error) {
+        });
+    }),
+
+    $test('lookup: invalid table name')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text,
+                description: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String
+            }
+        }).then(function () {
+            return store.lookup('*', [{ id: 'something', description: 'something' }]);
+        }).then(function () {
+            $assert.fail('failure expected');
+        }, function (error) {
+        });
+    }),
+
+    $test('lookup: no parameters')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text,
+                description: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String
+            }
+        }).then(function () {
+            return store.lookup();
+        }).then(function () {
+            $assert.fail('failure expected');
+        }, function (error) {
+        });
+    }),
+
     $test('Serialization: roundtripping verification')
     .checkAsync(function () {
         var store = createStore(),
@@ -863,6 +869,78 @@ $testGroup('SQLiteStore tests')
             $assert.areEqual(result, row);
         }, function (error) {
             $assert.fail(error);
+        });
+    }),
+
+    $test('upsert: empty table name')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text,
+                description: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String
+            }
+        }).then(function () {
+            return store.upsert('', [{ id: 'something', description: 'something' }]);
+        }).then(function () {
+            $assert.fail('failure expected');
+        }, function (error) {
+        });
+    }),
+
+    $test('upsert: null table name')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text,
+                description: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String
+            }
+        }).then(function () {
+            return store.upsert(null, [{ id: 'something', description: 'something' }]);
+        }).then(function () {
+            $assert.fail('failure expected');
+        }, function (error) {
+        });
+    }),
+
+    $test('upsert: undefined table name')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text,
+                description: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String
+            }
+        }).then(function () {
+            return store.upsert(undefined, [{ id: 'something', description: 'something' }]);
+        }).then(function () {
+            $assert.fail('failure expected');
+        }, function (error) {
+        });
+    }),
+
+    $test('upsert: invalid table name')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text,
+                description: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String
+            }
+        }).then(function () {
+            return store.upsert('*', [{ id: 'something', description: 'something' }]);
+        }).then(function () {
+            $assert.fail('failure expected');
+        }, function (error) {
         });
     }),
 
@@ -1078,6 +1156,24 @@ $testGroup('SQLiteStore tests')
             }
         }).then(function () {
             return store.upsert(testTableName, { id: 'someid', prop1: 100, prop2: 200 }, 'extra param');
+        }).then(function () {
+            $assert.fail('failure expected');
+        }, function (error) {
+        });
+    }),
+
+    $test('upsert: no parameters')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text,
+                description: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String
+            }
+        }).then(function () {
+            return store.upsert();
         }).then(function () {
             $assert.fail('failure expected');
         }, function (error) {
@@ -1526,6 +1622,24 @@ $testGroup('SQLiteStore tests')
         });
     }),
 
+    $test('delete: no parameters')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text,
+                description: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String
+            }
+        }).then(function () {
+            return store.del();
+        }).then(function () {
+            $assert.fail('failure expected');
+        }, function (error) {
+        });
+    }),
+
     $test('delete: invoked with table name and extra parameters')
     .description('Check that promise returned by upsert is either resolved or rejected even when invoked with extra parameters')
     .checkAsync(function () {
@@ -1831,6 +1945,24 @@ $testGroup('SQLiteStore tests')
         var store = createStore();
 
         return store.read(new Query('*')).then(function (results) {
+            $assert.fail('failure expected');
+        }, function (error) {
+        });
+    }),
+
+    $test('read: no parameters')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text,
+                description: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String
+            }
+        }).then(function () {
+            return store.read();
+        }).then(function () {
             $assert.fail('failure expected');
         }, function (error) {
         });
