@@ -295,13 +295,19 @@ var MobileServiceSQLiteStore = function (dbName) {
         //ttodoshrirs: this is not javascript convention. suggestion: use last arg as callback and use the rest as tableName, instances, etc. do this for all methods in this file. also remove callback from param list? may be?
 
         if (query) {
-            this.read(query).then(function (records) {
+            var self = this;
+            this.read(query).then(function (result) {
 
                 try {
-                    ids = records.map(function (record) {
-                        return records[idPropertyName];
+
+                    if (!_.isArray(result)) {
+                        result = result.result;
+                    }
+
+                    ids = result.map(function (record) {
+                        return record[idPropertyName];
                     });
-                    deleteIds(query.getComponents().table, ids, callback);
+                    self._del(query.getComponents().table, ids, callback);
                 } catch (error) {
                     callback(error);
                 }

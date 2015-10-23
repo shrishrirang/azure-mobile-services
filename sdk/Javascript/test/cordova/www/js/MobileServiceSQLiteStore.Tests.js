@@ -1346,6 +1346,126 @@ $testGroup('SQLiteStore tests')
         });
     }),
 
+    $test('delete: basic query')
+    .checkAsync(function () {
+        var store = createStore(),
+            row1 = { id: 'someid1', prop1: 'abc', prop2: 200 },
+            row2 = { id: 'someid2', prop1: 'abc', prop2: 100 },
+            row3 = { id: 'someid3', prop1: 'def', prop2: 200 };
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                prop1: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                prop2: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+            }
+        }).then(function () {
+            return store.upsert(testTableName, [row1, row2, row3]);
+        }).then(function () {
+            return store.del(new Query(testTableName));
+        }).then(function () {
+            return store.read(new Query(testTableName));
+        }).then(function (result) {
+            $assert.areEqual(result, []);
+        }, function (error) {
+            $assert.fail(error);
+        });
+    }),
+
+    $test('delete: query using where')
+    .checkAsync(function () {
+        var store = createStore(),
+            row1 = { id: 'someid1', prop1: 'abc', prop2: 200 },
+            row2 = { id: 'someid2', prop1: 'abc', prop2: 100 },
+            row3 = { id: 'someid3', prop1: 'def', prop2: 200 };
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                prop1: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                prop2: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+            }
+        }).then(function () {
+            return store.upsert(testTableName, [row1, row2, row3]);
+        }).then(function () {
+            var query = new Query(testTableName);
+            return store.del(query.where(function () {
+                return this.prop1 === 'abc';
+            }));
+        }).then(function () {
+            return store.read(new Query(testTableName));
+        }).then(function (result) {
+            $assert.areEqual(result, [row3]);
+        }, function (error) {
+            $assert.fail(error);
+        });
+    }),
+
+    $test('delete: query using multiple clauses')
+    .checkAsync(function () {
+        var store = createStore(),
+            row1 = { id: 'someid1', prop1: 'a', prop2: 100 },
+            row2 = { id: 'someid2', prop1: 'b', prop2: 100 },
+            row3 = { id: 'someid3', prop1: 'c', prop2: 100 },
+            row4 = { id: 'someid4', prop1: 'd', prop2: 100 },
+            row5 = { id: 'someid5', prop1: 'e', prop2: 200 },
+            row6 = { id: 'someid6', prop1: 'str', prop2: 100 },
+            row7 = { id: 'someid7', prop1: 'str', prop2: 100 };
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                prop1: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                prop2: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+            }
+        }).then(function () {
+            return store.upsert(testTableName, [row1, row2, row3, row4, row5, row6, row7]);
+        }).then(function () {
+            var query = new Query(testTableName);
+            return store.del(query.where(function (limit) {
+                return this.prop1 !== 'str' && this.prop2 < limit;
+            }, 150).select('id', 'prop1').skip(2).take(1).orderByDescending('prop1').includeTotalCount());
+        }).then(function () {
+            return store.read(new Query(testTableName));
+        }).then(function (result) {
+            $assert.areEqual(result, [row1, row3, row4, row5, row6, row7]);
+        }, function (error) {
+            $assert.fail(error);
+        });
+    }),
+
+    $test('delete: query matching no records')
+    .checkAsync(function () {
+        var store = createStore(),
+            row1 = { id: 'someid1', prop1: 'a', prop2: 100 },
+            row2 = { id: 'someid2', prop1: 'b', prop2: 100 };
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                prop1: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                prop2: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+            }
+        }).then(function () {
+            return store.upsert(testTableName, [row1, row2]);
+        }).then(function () {
+            var query = new Query(testTableName);
+            return store.del(query.where(function () {
+                return false;
+            }));
+        }).then(function () {
+            return store.read(new Query(testTableName));
+        }).then(function (result) {
+            $assert.areEqual(result, [row1, row2]);
+        }, function (error) {
+            $assert.fail(error);
+        });
+    }),
+
     $test('read: Read entire table')
     .checkAsync(function () {
         var store = createStore(),
