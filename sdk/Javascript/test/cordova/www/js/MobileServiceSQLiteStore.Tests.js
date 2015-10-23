@@ -644,7 +644,7 @@ $testGroup('SQLiteStore tests')
         });
     }),
 
-    $test('lookup: no parameters')
+    $test('lookup: no parameter')
     .checkAsync(function () {
         var store = createStore();
 
@@ -1162,7 +1162,7 @@ $testGroup('SQLiteStore tests')
         });
     }),
 
-    $test('upsert: no parameters')
+    $test('upsert: no parameter')
     .checkAsync(function () {
         var store = createStore();
 
@@ -1622,7 +1622,7 @@ $testGroup('SQLiteStore tests')
         });
     }),
 
-    $test('delete: no parameters')
+    $test('delete: no parameter')
     .checkAsync(function () {
         var store = createStore();
 
@@ -1950,7 +1950,7 @@ $testGroup('SQLiteStore tests')
         });
     }),
 
-    $test('read: no parameters')
+    $test('read: no parameter')
     .checkAsync(function () {
         var store = createStore();
 
@@ -1964,6 +1964,26 @@ $testGroup('SQLiteStore tests')
             return store.read();
         }).then(function () {
             $assert.fail('failure expected');
+        }, function (error) {
+        });
+    }),
+
+    $test('read: invoked with query and extra parameters')
+    .description('Check that promise returned by read is either resolved or rejected even when invoked with extra parameters')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                prop1: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real,
+                prop2: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+            }
+        }).then(function () {
+            return store.read(new Query(testTableName), 'extra param');
+        }).then(function (result) {
+            $assert.areEqual(result, []);
         }, function (error) {
         });
     })
