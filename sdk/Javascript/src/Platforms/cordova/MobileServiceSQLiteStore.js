@@ -132,7 +132,7 @@ var MobileServiceSQLiteStore = function (dbName) {
 
         for (var i = 0; i < instances.length; i++) {
 
-            if (_.isNotNull(instances[i])) {
+            if (!_.isNull(instances[i])) {
                 Validate.isValidId(instances[i][idPropertyName], 'instances[' + i + '].' + idPropertyName);
                 instances[i] = SQLiteHelper.serialize(instances[i], columnDefinitions);
             }
@@ -263,6 +263,10 @@ var MobileServiceSQLiteStore = function (dbName) {
             query,
             callback = Array.prototype.pop.apply(arguments); // Extract the callback argument added by Platform.async.
 
+        // Redefine function arguments to account for the popped callback
+        tableNameOrQuery = arguments[0];
+        ids = arguments[1];
+
         Validate.isFunction(callback);
         Validate.notNull(tableNameOrQuery);
 
@@ -312,17 +316,20 @@ var MobileServiceSQLiteStore = function (dbName) {
     // move this out of this or not? //ttodoshrirs
     this._del = function (tableName, ids, callback) {
         // Delete SQL statements corresponding to each record we want to delete from the table.
-        var deleteStatements = [];
+        var deleteStatements = [],
+            deleteParams = [];
 
         for (var i = 0; i < ids.length; i++) {
-            //ttodoshrirs: no need to enforce this. we should be able to delete based on whatever object is specified using that as a query.
-            Validate.isValidId(ids[i]);
-            deleteStatements.push(_.format("DELETE FROM {0} WHERE {1} = ? COLLATE NOCASE", tableName, idPropertyName));
+            if (!_.isNull(ids[i])) {
+                Validate.isValidId(ids[i]);
+                deleteStatements.push(_.format("DELETE FROM {0} WHERE {1} = ? COLLATE NOCASE", tableName, idPropertyName));
+                deleteParams.push([ids[i]]);
+            }
         }
 
         this._db.transaction(function (transaction) {
             for (i = 0; i < deleteStatements.length; i++) {
-                transaction.executeSql(deleteStatements[i], [ids[i]]);
+                transaction.executeSql(deleteStatements[i], deleteParams[i]);
             }
         }, function (error) {
             callback(error);

@@ -1038,18 +1038,33 @@ $testGroup('SQLiteStore tests')
 
     $test('delete: record not found')
     .checkAsync(function () {
-        var store = createStore();
+        var store = createStore(),
+            row = { id: 'id1', description: 'something' };
 
         return store.defineTable({
             name: testTableName,
             columnDefinitions: {
-                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
-                prop1: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real,
-                prop2: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text,
+                description: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String
             }
         }).then(function () {
-            return store.del(testTableName, 'idnotfound');
+            return store.upsert(testTableName, [row]);
         }).then(function () {
+            return store.read(new Query(testTableName));
+        }).then(function (result) {
+            $assert.areEqual(result, [row]);
+            // Specify a single id to delete
+            return store.del(testTableName, 'notfound1');
+        }).then(function () {
+            return store.read(new Query(testTableName));
+        }).then(function (result) {
+            $assert.areEqual(result, [row]);
+            // Specify an array of ids to delete
+            return store.del(testTableName, ['notfound2', 'notfound3']);
+        }).then(function () {
+            return store.read(new Query(testTableName));
+        }).then(function (result) {
+            $assert.areEqual(result, [row]);
         }, function (error) {
             $assert.fail(error);
         });
@@ -1057,26 +1072,72 @@ $testGroup('SQLiteStore tests')
 
     $test('delete: null id')
     .checkAsync(function () {
-        var store = createStore();
+        var store = createStore(),
+            row = { id: 'id1', description: 'something' };
 
         return store.defineTable({
             name: testTableName,
             columnDefinitions: {
-                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
-                prop1: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real,
-                prop2: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text,
+                description: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String
             }
         }).then(function () {
-            return store.upsert(testTableName, { id: 'someid', prop1: 100, prop2: 200 });
+            return store.upsert(testTableName, [row]);
         }).then(function () {
-            return store.del(testTableName, [null]);
+            return store.read(new Query(testTableName));
+        }).then(function (result) {
+            $assert.areEqual(result, [row]);
+            // Specify a single id to delete
+            return store.del(testTableName, null);
         }).then(function () {
-            $assert.fail('failure expected');
+            return store.read(new Query(testTableName));
+        }).then(function (result) {
+            $assert.areEqual(result, [row]);
+            // Specify an array of ids to delete
+            return store.del(testTableName, [null, row.id]);
+        }).then(function () {
+            return store.read(new Query(testTableName));
+        }).then(function (result) {
+            $assert.areEqual(result, []);
         }, function (error) {
+            $assert.fail(error);
         });
     }),
 
-    //ttodoshrirs: for array and non-array variants 
+    $test('delete: id specified as undefined')
+    .checkAsync(function () {
+        var store = createStore(),
+            row = { id: 'id1', description: 'something' };
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text,
+                description: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String
+            }
+        }).then(function () {
+            return store.upsert(testTableName, [row]);
+        }).then(function () {
+            return store.read(new Query(testTableName));
+        }).then(function (result) {
+            $assert.areEqual(result, [row]);
+            // Specify a single id to delete
+            return store.del(testTableName, undefined);
+        }).then(function () {
+            return store.read(new Query(testTableName));
+        }).then(function (result) {
+            $assert.areEqual(result, [row]);
+            // Specify an array of ids to delete
+            return store.del(testTableName, [undefined, row.id]);
+        }).then(function () {
+            return store.read(new Query(testTableName));
+        }).then(function (result) {
+            $assert.areEqual(result, []);
+        }, function (error) {
+            $assert.fail(error);
+        });
+    }),
+    //ttodoshrirs:make sure mix of fail and success chain promises do not wrongly pass the test
     $test('delete: id not specified')
     .checkAsync(function () {
         var store = createStore();
@@ -1093,57 +1154,16 @@ $testGroup('SQLiteStore tests')
         }).then(function () {
             return store.del(testTableName);
         }).then(function () {
-            $assert.fail('failure expected');
-        }, function (error) {
-        });
-    }),
-
-    $test('delete: id in id array specified as undefined')
-    .checkAsync(function () {
-        var store = createStore();
-
-        return store.defineTable({
-            name: testTableName,
-            columnDefinitions: {
-                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
-                prop1: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real,
-                prop2: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
-            }
-        }).then(function () {
-            return store.upsert(testTableName, { id: 'someid', prop1: 100, prop2: 200 });
-        }).then(function () {
-            return store.del(testTableName, [undefined]);
-        }).then(function () {
-            $assert.fail('failure expected');
-        }, function (error) {
-        });
-    }),
-
-    $test('delete: null id array')
-    .checkAsync(function () {
-        var store = createStore();
-
-        return store.defineTable({
-            name: testTableName,
-            columnDefinitions: {
-                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
-                prop1: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real,
-                prop2: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
-            }
-        }).then(function () {
-            return store.upsert(testTableName, { id: 'someid', prop1: 100, prop2: 200 });
-        }).then(function () {
-            return store.del(testTableName, null);
-        }).then(function () {
         }, function (error) {
             $assert.fail(error);
         });
     }),
 
-    $test('delete: id array contains invalid id')
+    $test('delete: a single invalid id')
     .checkAsync(function () {
         var store = createStore(),
-            row = { id: 'someid', prop1: 100, prop2: 200 };
+            row = { id: 'someid', prop1: 100, prop2: 200 },
+            testError;
 
         return store.defineTable({
             name: testTableName,
@@ -1154,11 +1174,20 @@ $testGroup('SQLiteStore tests')
             }
         }).then(function () {
             return store.upsert(testTableName, row);
+        }).then(function (result) {
+            //$assert.areEqual(result, [row]);//ttodoshrirs: remove asserts like these. rely on upsert tests for such scenarios. focus only on delete in a delete test
+            // Specify a single id to delete
+            return store.del(testTableName, { id: 'this object is an invalid id' });
         }).then(function () {
-            return store.del(testTableName, [{a: 1}]);
-        }).then(function () {
-            $assert.fail('failure expected');
+            testError = 'delete should have failed';
+        }, function(error) {
+            return store.read(new Query(testTableName));
+        }).then(function (result) {
+            $assert.isNull(testError);
+            $assert.areEqual(result, [row]);
         }, function (error) {
+            $assert.isNull(testError);
+            $assert.fail(error);
         });
     }),
 
