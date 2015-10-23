@@ -19,9 +19,9 @@ var MobileServiceSQLiteStore = function (dbName) {
     /// </summary>
 
     this._db = window.sqlitePlugin.openDatabase({ name: dbName });
-    this._tableDefinitions = {}; //ttodoshrirs: review prototype props vs instance props
+    this._tableDefinitions = {};
 
-    this.defineTable = Platform.async(function (tableDefinition, callback) {
+    this.defineTable = Platform.async(function (tableDefinition) {
         /// <summary>Defines the local table in the sqlite store</summary>
         /// <param name="tableDefinition">Table definition object defining the table name and columns
         /// Example of a valid tableDefinition object:
@@ -41,13 +41,13 @@ var MobileServiceSQLiteStore = function (dbName) {
         /// If the operation fails, the promise is rejected
         /// </returns>
 
-        // Ensure 'defineTable' has been invoked with exactly 1 argument.
-        // As Platform.async silently appends a callback argument to the original list of arguments,
-        // we expect the arugment length to be 2.
-        Validate.length(arguments, 2, 'arguments');
+        // Extract the callback argument added by Platform.async.
+        var callback = Array.prototype.pop.apply(arguments);
 
-        Validate.notNull(callback, 'callback');
+        // Redefine function argument to account for the popped callback
+        tableDefinition = arguments[0];
 
+        Validate.isFunction(callback, 'callback');
         Validate.notNull(tableDefinition, 'tableDefinition');
         Validate.isString(tableDefinition.name, 'tableDefinition.name');
         Validate.notNullOrEmpty(tableDefinition.name, 'tableDefinition.name');
@@ -105,11 +105,14 @@ var MobileServiceSQLiteStore = function (dbName) {
         /// If the operation fails, the promise is rejected
         /// </returns>
 
-        // Ensure 'upsert' has been invoked with exactly 2 arguments.
-        // As Platform.async silently appends a callback argument to the original list of arguments,
-        // we expect the arugment length to be 3.
-        Validate.length(arguments, 3, 'arguments');
+        // Extract the callback argument added by Platform.async.
+        var callback = Array.prototype.pop.apply(arguments);
 
+        // Redefine function arguments to account for the popped callback
+        tableName = arguments[0];
+        instances = arguments[1];
+
+        Validate.isFunction(callback);
         Validate.isString(tableName, 'tableName');
         Validate.notNullOrEmpty(tableName, 'tableName');
 
@@ -203,7 +206,6 @@ var MobileServiceSQLiteStore = function (dbName) {
         });
     });
 
-    // TODO(shrirs): Implement equivalents of readWithQuery and deleteUsingQuery
     this.lookup = Platform.async(function (tableName, id, callback) {
         /// <summary>Perform a lookup against a local table</summary>
         /// <param name="tableName">Name of the local table in which look up is to be performed</param>
@@ -213,11 +215,14 @@ var MobileServiceSQLiteStore = function (dbName) {
         /// If the operation fails, the promise is rejected
         /// </returns>
 
-        // Ensure 'lookup' has been invoked with exactly 2 arguments.
-        // As Platform.async silently appends a callback argument to the original list of arguments,
-        // we expect the arugment length to be 3.
-        Validate.length(arguments, 3, 'arguments');
+        // Extract the callback argument added by Platform.async.
+        var callback = Array.prototype.pop.apply(arguments);
 
+        // Redefine function arguments to account for the popped callback
+        tableName = arguments[0];
+        id = arguments[1];
+
+        Validate.isFunction(callback, 'callback');
         Validate.isString(tableName, 'tableName');
         Validate.notNullOrEmpty(tableName, 'tableName');
 
@@ -249,9 +254,6 @@ var MobileServiceSQLiteStore = function (dbName) {
         });
     });
 
-    //TODO(shrirs): instance needs to be an array instead of an object
-    //ttodoshrirs: input should either be a queryjs object or an array of ids
-    //ttodoshrirs: update upstream table, synccontext methods in line with changes to this file
     this.del = Platform.async(function (tableNameOrQuery, ids) {
         /// <summary>Deletes records from the local table</summary>
         /// <param name="tableNameOrQuery">Name of the local table in which delete is to be performed OR a queryjs object defining records to be deleted</param>
@@ -261,9 +263,7 @@ var MobileServiceSQLiteStore = function (dbName) {
         /// If the operation fails, the promise is rejected
         /// </returns>
 
-        var tableName,
-            query,
-            callback = Array.prototype.pop.apply(arguments); // Extract the callback argument added by Platform.async.
+        var callback = Array.prototype.pop.apply(arguments); // Extract the callback argument added by Platform.async.
 
         // Redefine function arguments to account for the popped callback
         tableNameOrQuery = arguments[0];
@@ -272,6 +272,7 @@ var MobileServiceSQLiteStore = function (dbName) {
         Validate.isFunction(callback);
         Validate.notNull(tableNameOrQuery);
 
+        var tableName, query;
         if (_.isString(tableNameOrQuery)) {
             Validate.notNullOrEmpty(tableNameOrQuery, 'tableNameOrQuery');
             tableName = tableNameOrQuery;
@@ -371,11 +372,13 @@ var MobileServiceSQLiteStore = function (dbName) {
         /// If the operation fails, the promise is rejected
         /// </returns>
 
-        // Ensure 'read' has been invoked with exactly 1 argument.
-        // As Platform.async silently appends a callback argument to the original list of arguments,
-        // we expect the arugment length to be 2.
-        Validate.length(arguments, 2, 'arguments');
+        // Extract the callback argument added by Platform.async.
+        var callback = Array.prototype.pop.apply(arguments);
 
+        // Redefine function argument to account for the popped callback
+        query = arguments[0];
+
+        Validate.isFunction(callback, 'callback');
         Validate.notNull(query, 'query');
         Validate.isObject(query, 'query');
 

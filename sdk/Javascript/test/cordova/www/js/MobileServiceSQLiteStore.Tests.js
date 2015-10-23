@@ -299,6 +299,29 @@ $testGroup('SQLiteStore tests')
         });
     }),
 
+    $test('defineTable: invoked with extra parameters')
+    .checkAsync(function () {
+        return createStore().defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer,
+                flag: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer,
+                object: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Object
+            }
+        }, 'extra parameter').then(function() {
+        }, function(error) {
+            $assert.fail(error);
+        });
+    }),
+
+    $test('defineTable: invoked with no parameter')
+    .checkAsync(function () {
+        return createStore().defineTable().then(function () {
+            $assert.fail('failure expected');
+        }, function(error) {
+        });
+    }),
+
     $test('defineTable: reading undefined columns should work')
     .checkAsync(function () {
         var store = createStore(),
@@ -513,8 +536,8 @@ $testGroup('SQLiteStore tests')
         }).then(function () {
             return store.lookup(testTableName, 'some id', 'extra param');
         }).then(function (result) {
-            $assert.fail('failure expected');
         }, function (error) {
+            $assert.fail(error);
         });
     }),
 
@@ -1142,7 +1165,7 @@ $testGroup('SQLiteStore tests')
         });
     }),
 
-    $test('upsert: invoked with tableName and extra parameters')
+    $test('upsert: invoked with extra parameters')
     .description('Check that promise returned by upsert is either resolved or rejected even when invoked with extra parameters')
     .checkAsync(function () {
         var store = createStore();
@@ -1157,8 +1180,8 @@ $testGroup('SQLiteStore tests')
         }).then(function () {
             return store.upsert(testTableName, { id: 'someid', prop1: 100, prop2: 200 }, 'extra param');
         }).then(function () {
-            $assert.fail('failure expected');
         }, function (error) {
+            $assert.fail(error);
         });
     }),
 
@@ -1449,7 +1472,7 @@ $testGroup('SQLiteStore tests')
             $assert.fail(error);
         });
     }),
-    //ttodoshrirs:make sure mix of fail and success chain promises do not wrongly pass the test
+
     $test('delete: id not specified')
     .checkAsync(function () {
         var store = createStore();
@@ -1487,7 +1510,6 @@ $testGroup('SQLiteStore tests')
         }).then(function () {
             return store.upsert(testTableName, row);
         }).then(function (result) {
-            //$assert.areEqual(result, [row]);//ttodoshrirs: remove asserts like these. rely on upsert tests for such scenarios. focus only on delete in a delete test
             // Specify a single id to delete
             return store.del(testTableName, { id: 'this object is an invalid id' });
         }).then(function () {
@@ -1968,7 +1990,7 @@ $testGroup('SQLiteStore tests')
         });
     }),
 
-    $test('read: invoked with query and extra parameters')
+    $test('read: invoked with extra parameters')
     .description('Check that promise returned by read is either resolved or rejected even when invoked with extra parameters')
     .checkAsync(function () {
         var store = createStore();
@@ -1985,6 +2007,7 @@ $testGroup('SQLiteStore tests')
         }).then(function (result) {
             $assert.areEqual(result, []);
         }, function (error) {
+            $assert.fail(error);
         });
     })
 );
