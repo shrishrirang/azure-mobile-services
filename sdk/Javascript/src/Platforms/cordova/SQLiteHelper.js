@@ -43,7 +43,6 @@ exports.getColumnAffinity = function(columnType) {
     return columnAffinity;
 };
 
-//ttodoshrirs: group epxorts
 exports.serialize = function (value, columnDefinitions) {
 
     if (_.isNull(value)) {
@@ -57,7 +56,7 @@ exports.serialize = function (value, columnDefinitions) {
     var serializedValue = {};
 
     var columnType;
-    for (var property in value) { //ttodoshrirs error handling
+    for (var property in value) {
 
         columnType = columnDefinitions[property];
         Validate.notNull(columnType);
@@ -75,12 +74,16 @@ exports.deserialize = function (value, columnDefinitions) {
     }
 
     Validate.notNull(columnDefinitions, 'columnDefinitions');
+    Validate.isObject(columnDefinitions);
+    Validate.isObject(value);
 
     var deserializedValue = {};
 
     var columnType;
-    for (var property in value) { //ttodoshrirs error handling
+    for (var property in value) {
         columnType = columnDefinitions[property];
+        Validate.notNull(columnType);
+
         deserializedValue[property] = deserializeMember(value[property], columnType);
     }
 
