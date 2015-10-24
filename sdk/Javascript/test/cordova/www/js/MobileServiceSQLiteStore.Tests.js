@@ -7,21 +7,18 @@
 /// <reference path='.\Generated\Tests.js' />
 /// <reference path='.\Generated\MobileServices.Cordova.Internals.js' />
 
-var Validate = require('Validate'),
-    Platform = require('Platforms/Platform'),
+var Platform = require('Platforms/Platform'),
     Query = require('query.js').Query;
 
-var testServiceUrl = 'http://test.com';
-var testServiceKey = 'key';
-var testTableName = 'items';
-var testDbFile = 'test101.db';
+var testTableName = 'sometable';
+var testDbFile = 'somedbfile.db';
 
 $testGroup('SQLiteStore tests')
     .beforeEachAsync(Platform.async( function(callback) {
         var db = window.sqlitePlugin.openDatabase({ name: testDbFile });
 
         // Delete table created by the unit tests
-        db.executeSql('DROP TABLE IF EXISTS items', null, function() {
+        db.executeSql('DROP TABLE IF EXISTS ' + testTableName, null, function() {
             callback();
         }, function(err) {
             callback(err);
