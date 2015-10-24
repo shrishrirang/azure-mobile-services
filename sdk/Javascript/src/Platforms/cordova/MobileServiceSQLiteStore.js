@@ -7,7 +7,7 @@ var Platform = require('Platforms/Platform'),
     _ = require('../../Utilities/Extensions'),
     queryHelper = require('azure-mobile-apps/src/query'),
     SQLiteTypes = require('./SQLiteTypes'),
-    SQLiteHelper = require('./SQLiteHelper'),
+    SqliteSerializer = require('./SqliteSerializer'),
     Query = require('query.js').Query,
     formatSql = require('azure-mobile-apps/src/data/sql/query/format');
 
@@ -137,7 +137,7 @@ var MobileServiceSQLiteStore = function (dbName) {
 
             if (!_.isNull(instances[i])) {
                 Validate.isValidId(instances[i][idPropertyName], 'instances[' + i + '].' + idPropertyName);
-                instances[i] = SQLiteHelper.serialize(instances[i], columnDefinitions);
+                instances[i] = SqliteSerializer.serialize(instances[i], columnDefinitions);
             }
         }
 
@@ -244,7 +244,7 @@ var MobileServiceSQLiteStore = function (dbName) {
                     instance = result.rows.item(0);
                 }
 
-                instance = SQLiteHelper.deserialize(instance, columnDefinitions);
+                instance = SqliteSerializer.deserialize(instance, columnDefinitions);
                 callback(null, instance);
             } catch (err) {
                 callback(err);
@@ -389,7 +389,7 @@ var MobileServiceSQLiteStore = function (dbName) {
                 var row;
                 for (var j = 0; j < res.rows.length; j++) {
 
-                    row = SQLiteHelper.deserialize(res.rows.item(j), columnDefinitions);
+                    row = SqliteSerializer.deserialize(res.rows.item(j), columnDefinitions);
                     result.push(row);
                 }
             });
@@ -433,7 +433,7 @@ function createTable(transaction, tableDefinition) {
     for (var columnName in columnDefinitions) {
         var columnType = columnDefinitions[columnName];
 
-        var columnDefinitionClause = _.format("[{0}] {1}", columnName, SQLiteHelper.getColumnAffinity(columnType));
+        var columnDefinitionClause = _.format("[{0}] {1}", columnName, SqliteSerializer.getColumnAffinity(columnType));
 
         // TODO(shrirs): Handle cases where id property may be missing
         if (columnName === idPropertyName) {

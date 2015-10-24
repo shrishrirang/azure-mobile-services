@@ -13,6 +13,11 @@ var Platform = require('Platforms/Platform'),
     ColumnAffinity = require('./SQLiteTypes').ColumnAffinity;
 
 exports.getColumnAffinity = function(columnType) {
+    /// <summary>
+    /// Gets the appopriate column affinity for storing values of specified type in a SQLite table column
+    /// </summary>
+    /// <param name="columnType">The type of values that will be stored in the SQLite table column</param>
+    /// <returns>The appropriate column affinity</returns>
 
     var columnAffinity;
 
@@ -37,13 +42,19 @@ exports.getColumnAffinity = function(columnType) {
             columnAffinity = "NUMERIC";
             break;
         default:
-            throw _.format(Platform.getResourceString("SQLiteHelper_UnsupportedColumnType"), columnType);
+            throw new Error(_.format(Platform.getResourceString("SQLiteHelper_UnsupportedColumnType"), columnType));
     }
 
     return columnAffinity;
 };
 
 exports.serialize = function (value, columnDefinitions) {
+    /// <summary>
+    /// Serializes an object for writing to SQLite.
+    /// Appopriate column affinities for creating the table to hold the serialized value can be obtained using the getColumnAffinity() function.
+    /// </summary>
+    /// <param name="value">The value to serialize.</param>
+    /// <returns>Serialized value</returns>
 
     if (_.isNull(value)) {
         return value;
@@ -55,10 +66,8 @@ exports.serialize = function (value, columnDefinitions) {
 
     var serializedValue = {};
 
-    var columnType;
     for (var property in value) {
-
-        columnType = columnDefinitions[property];
+        var columnType = columnDefinitions[property];
         Validate.notNull(columnType);
 
         serializedValue[property] = serializeMember(value[property], columnType);
@@ -68,6 +77,12 @@ exports.serialize = function (value, columnDefinitions) {
 };
 
 exports.deserialize = function (value, columnDefinitions) {
+    /// <summary>
+    /// Deserializes a value read from SQLite.
+    /// </summary>
+    /// <param name="value">The value to deserialize.</param>
+    /// <param name="columnDefinitions">Poperty/column definitions of the object being deserialized.</param>
+    /// <returns>Deserialized value</returns>
 
     if (_.isNull(value)) {
         return value;
@@ -77,12 +92,14 @@ exports.deserialize = function (value, columnDefinitions) {
     Validate.isObject(columnDefinitions);
     Validate.isObject(value);
 
+    columnDefinitions = columnDefinitions || {};
+    Validate.isObject(value);
+
     var deserializedValue = {};
 
     var columnType;
     for (var property in value) {
         columnType = columnDefinitions[property];
-        Validate.notNull(columnType);
 
         deserializedValue[property] = deserializeMember(value[property], columnType);
     }
@@ -90,7 +107,9 @@ exports.deserialize = function (value, columnDefinitions) {
     return deserializedValue;
 };
 
-//ttodoshrirs: add documentation wherever necessary
+// Serializes a property of an object for writing to SQLite
+// Note: The value can be serialized without specifying the column type, but the function needs column type
+// to implement type safety. This way we don't need to wait for the value to be deserialized to know that the value is of an incorrect type.
 function serializeMember(value, columnType) {
 
     var serializedValue;
@@ -116,16 +135,17 @@ function serializeMember(value, columnType) {
             serializedValue = convertToReal(value);
             break;
         default:
-            throw _.format(Platform.getResourceString("SQLiteHelper_UnsupportedColumnType"), columnType);
+            throw new Error(_.format(Platform.getResourceString("SQLiteHelper_UnsupportedColumnType"), columnType));
     }
 
     return serializedValue;
 }
 
-function deserializeMember(value, columnType) {
+// Deserializes a property of an object read from SQLite
+function deserializeMember(value, targetType) {
     var deserializedValue;
 
-    switch (columnType) {
+    switch (targetType) {
         case ColumnType.Object:
             deserializedValue = convertToObject(value);
             break;
@@ -151,12 +171,12 @@ function deserializeMember(value, columnType) {
         case ColumnType.Float:
             deserializedValue = convertToReal(value);
             break;
-        // We want to be able to deserialize values whose type is not defined.
+        // We want to be able to deserialize objects with missing columns in table definition
         case undefined:
             deserializedValue = value;
             break;
         default:
-            throw Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion', value, typeof value, columnType);
+            throw new Error(Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion', value, typeof value, targetType));
     }
 
     return deserializedValue;
@@ -185,7 +205,7 @@ function convertToInteger(value) {
         return value.getTime(); // Integer representation of date in terms of number of milli seconds since 1 January 1970 00:00:00 UTC (Unix Epoch).
     }
 
-    throw Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion', value, typeof value, 'integer');
+    throw new Error(_.format(Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion'), value, typeof value, 'integer'));
 }
 
 function convertToBoolean(value) {
@@ -197,8 +217,8 @@ function convertToBoolean(value) {
     if (_.isInteger(value)) {
         return value === 0 ? false : true;
     }
-
-    throw Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion', value, typeof value, 'Boolean');
+        
+    throw new Error(_.format(Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion'), value, typeof value, 'Boolean'));
 }
 
 function convertToDate(value) {
@@ -211,7 +231,7 @@ function convertToDate(value) {
         return new Date(value);
     }
 
-    throw Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion', value, typeof value, 'Date');
+    throw new Error(_.format(Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion'), value, typeof value, 'Date'));
 }
 
 function convertToReal(value) {
@@ -220,7 +240,7 @@ function convertToReal(value) {
         return value;
     }
 
-    throw Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion', value, typeof value, 'Real');
+    throw new Error(_.format(Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion'), value, typeof value, 'Real'));
 }
 
 function convertToObject(value) {
@@ -228,13 +248,35 @@ function convertToObject(value) {
         return value;
     }
 
-    return JSON.parse(value);
+    var result;
+    try {
+        result = JSON.parse(value);
+
+        // Make sure the deserialized value is indeed an object
+        Validate.isObject(result);
+    } catch (ex) {
+        // throw a meaningful exception
+        throw new Error(_.format(Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion'), value, typeof value, 'Object'));
+    }
+
+    return result;
 }
 
 function convertToArray(value) {
-    if (_.isObject(value)) {
+    if (_.isArray(value)) {
         return value;
     }
 
-    return JSON.parse(value);
+    var result;
+    try {
+        result = JSON.parse(value);
+
+        // Make sure the deserialized value is indeed an array
+        Validate.isArray(result);
+    } catch (ex) {
+        // throw a meaningful exception
+        throw new Error(_.format(Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion'), value, typeof value, 'Array'));
+    }
+
+    return result;
 }
