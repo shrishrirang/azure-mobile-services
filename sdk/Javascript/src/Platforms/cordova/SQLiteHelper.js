@@ -37,7 +37,7 @@ exports.getColumnAffinity = function(columnType) {
             columnAffinity = "NUMERIC";
             break;
         default:
-            throw Platform.getResourceString('SQLiteHelper_UnsupportedColumnType', columnType); //ttodoshrirs
+            throw _.format(Platform.getResourceString("SQLiteHelper_UnsupportedColumnType"), columnType);
     }
 
     return columnAffinity;
@@ -51,6 +51,8 @@ exports.serialize = function (value, columnDefinitions) {
     }
 
     Validate.notNull(columnDefinitions, 'columnDefinitions');
+    Validate.isObject(columnDefinitions);
+    Validate.isObject(value);
 
     var serializedValue = {};
 
@@ -111,7 +113,7 @@ function serializeMember(value, columnType) {
             serializedValue = convertToReal(value);
             break;
         default:
-            throw Platform.getResourceString('SQLiteHelper_UnsupportedColumnAffinity', value, typeof value, columnType);//ttodoshrirs
+            throw _.format(Platform.getResourceString("SQLiteHelper_UnsupportedColumnType"), columnType);
     }
 
     return serializedValue;
@@ -151,7 +153,7 @@ function deserializeMember(value, columnType) {
             deserializedValue = value;
             break;
         default:
-            throw Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion', value, typeof value, columnType);//ttodoshrirs
+            throw Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion', value, typeof value, columnType);
     }
 
     return deserializedValue;
@@ -180,7 +182,7 @@ function convertToInteger(value) {
         return value.getTime(); // Integer representation of date in terms of number of milli seconds since 1 January 1970 00:00:00 UTC (Unix Epoch).
     }
 
-    throw Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion'); //ttodoshrirs
+    throw Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion', value, typeof value, 'integer');
 }
 
 function convertToBoolean(value) {
@@ -193,7 +195,7 @@ function convertToBoolean(value) {
         return value === 0 ? false : true;
     }
 
-    throw Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion'); //ttodoshrirs
+    throw Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion', value, typeof value, 'Boolean');
 }
 
 function convertToDate(value) {
@@ -206,7 +208,7 @@ function convertToDate(value) {
         return new Date(value);
     }
 
-    throw Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion'); //ttodoshrirs
+    throw Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion', value, typeof value, 'Date');
 }
 
 function convertToReal(value) {
@@ -215,7 +217,7 @@ function convertToReal(value) {
         return value;
     }
 
-    throw Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion'); //ttodoshrirs
+    throw Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion', value, typeof value, 'Real');
 }
 
 function convertToObject(value) {
