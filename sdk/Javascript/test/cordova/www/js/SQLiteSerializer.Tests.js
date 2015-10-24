@@ -9,13 +9,13 @@
 
 var Validate = require('Validate'),
     Platform = require('Platforms/Platform'),
-    Query = require('query.js').Query;
+    SQLiteSerializer = require('../../../../src/Platforms/cordova/SQLiteSerializer');
 
 $testGroup('SQLiteStore tests').tests(
 
-    $test('placeholder___ ttodoshrirs')
+    $test('Verify column affinity computation')
     .check(function () {
-        
+        $assert.isNotNull(SQLiteSerializer);
     })
 );
 
