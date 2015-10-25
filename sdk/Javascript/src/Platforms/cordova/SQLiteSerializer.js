@@ -143,8 +143,6 @@ function serializeMember(value, columnType) {
             serializedValue = convertToInteger(value);
             break;
         case ColumnType.Date:
-            // Be strict about the type while serializing.
-            Validate.isDate(value);
             serializedValue = convertToDate(value);
             break;
         case ColumnType.Real:
@@ -210,7 +208,10 @@ function convertToText(value) {
 
 function convertToInteger(value) {
 
-    if (_.isNull(value) || _.isInteger(value)) {
+    if (_.isNull(value))
+        return null;
+    
+    if(_.isInteger(value)) {
         return value;
     }
 
@@ -223,7 +224,10 @@ function convertToInteger(value) {
 
 function convertToBoolean(value) {
 
-    if (_.isNull(value) || _.isBool(value)) {
+    if (_.isNull(value))
+        return null;
+
+    if (_.isBool(value)) {
         return value;
     }
 
@@ -236,17 +240,11 @@ function convertToBoolean(value) {
 
 function convertToDate(value) {
 
-    if (_.isNull(value) || _.isDate(value)) {
+    if (_.isNull(value))
+        return null;
+
+    if (_.isDate(value)) {
         return value;
-    }
-
-    var milliseconds = value;
-    if (_.isString(value)) {
-        milliseconds = Date.parse(value);
-    }
-
-    if (_.isInteger(milliseconds)) {
-        return new Date(milliseconds);
     }
 
     throw new Error(_.format(Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion'), value, typeof value, 'Date'));
@@ -254,7 +252,10 @@ function convertToDate(value) {
 
 function convertToReal(value) {
 
-    if (_.isNull(value) || _.isNumber(value)) {
+    if (_.isNull(value))
+        return null;
+
+    if (_.isNumber(value)) {
         return value;
     }
 
