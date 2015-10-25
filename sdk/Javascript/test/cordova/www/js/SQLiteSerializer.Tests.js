@@ -392,6 +392,34 @@ $testGroup('SQLiteSerializer tests').tests(
         }
     }),
 
+    $test('property with null value, different column types')
+    .check(function () {
+        var value = { val: null },
+            columnDefinitions = {};
+
+        for (var c in ColumnType) {
+
+            columnDefinitions.val = ColumnType[c];
+
+            var serializedValue = SQLiteSerializer.serialize(value, columnDefinitions);
+            $assert.areEqual(serializedValue, value);
+        }
+    }),
+
+    $test('property with undefined value, different column types')
+    .check(function () {
+        var value = { val: null },
+            columnDefinitions = {};
+
+        for (var c in ColumnType) {
+
+            columnDefinitions.val = ColumnType[c];
+
+            var serializedValue = SQLiteSerializer.serialize(value, columnDefinitions);
+            $assert.areEqual(serializedValue, { val: null });
+        }
+    }),
+
     $test('Attempting to serialize to an unsupported column should fail')
     .check(function () {
         var value = {},
