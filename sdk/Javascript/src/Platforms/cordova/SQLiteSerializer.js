@@ -281,6 +281,10 @@ function convertToObject(value) {
 }
 
 function convertToArray(value) {
+    if (_.isNull(value)) {
+        return null;
+    }
+
     if (_.isArray(value)) {
         return value;
     }

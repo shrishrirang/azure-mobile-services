@@ -123,14 +123,14 @@ $testGroup('SQLiteStore tests')
         });
     }),
 
-    $test('defineTable: table name missing from table definition')
+    $test('defineTable: table definition without table name')
     .checkAsync(function () {
         var tableDefinition = {
-                columnDefinitions: {
-                    id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer,
-                    flag: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer
-                }
-            };
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer,
+                flag: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer
+            }
+        };
 
         return createStore().defineTable(tableDefinition).then(function () {
             $assert.fail('test should fail');
@@ -138,11 +138,43 @@ $testGroup('SQLiteStore tests')
         });
     }),
 
-    $test('defineTable: column definition missing from table definition')
+    $test('defineTable: table definition with an invalid table name')
+    .checkAsync(function () {
+        var tableDefinition = {
+            tableName: '*',
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer,
+                flag: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer
+            }
+        };
+
+        return createStore().defineTable(tableDefinition).then(function () {
+            $assert.fail('test should fail');
+        }, function (error) {
+        });
+    }),
+
+    $test('defineTable: table definition without column definitions')
     .checkAsync(function () {
         var tableDefinition = {
             name: testTableName
         };
+
+        return createStore().defineTable(tableDefinition).then(function () {
+            $assert.fail('test should fail');
+        }, function (error) {
+        });
+    }),
+
+    $test('defineTable: table definition with an invalid column name')
+    .checkAsync(function () {
+        var tableDefinition = {
+            tableName: '*',
+            columnDefinitions: {}
+        };
+
+        tableDefinition.columnDefinitions['id'] = WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer;
+        tableDefinition.columnDefinitions['*'] = WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer;
 
         return createStore().defineTable(tableDefinition).then(function () {
             $assert.fail('test should fail');
@@ -711,7 +743,7 @@ $testGroup('SQLiteStore tests')
         });
     }),
 
-    $test('Serialization: roundtripping verification')
+    $test('Serialization: roundtripping verification non-null values')
     .checkAsync(function () {
         var store = createStore(),
             row = {
@@ -737,6 +769,51 @@ $testGroup('SQLiteStore tests')
                 boolean: true,
                 bool: false,
                 date: new Date(2015, 11, 11, 23, 5, 59)
+            };
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                object: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Object,
+                array: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Array,
+                integer: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer,
+                int: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Int,
+                float: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Float,
+                real: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real,
+                string: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                text: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Text,
+                boolean: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Boolean,
+                bool: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Bool,
+                date: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Date
+            }
+        }).then(function () {
+            return store.upsert(testTableName, row);
+        }).then(function () {
+            return store.lookup(testTableName, row.id);
+        }).then(function (result) {
+            $assert.areEqual(result, row);
+        }, function (error) {
+            $assert.fail(error);
+        });
+    }),
+
+    $test('Serialization: roundtripping verification null values')
+    .checkAsync(function () {
+        var store = createStore(),
+            row = {
+                id: '1',
+                object: null,
+                array: null,
+                integer: null,
+                int: null,
+                float: null,
+                real: null,
+                string: null,
+                text: null,
+                boolean: null,
+                bool: null,
+                date: null,
             };
 
         return store.defineTable({
