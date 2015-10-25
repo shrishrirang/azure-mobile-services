@@ -202,7 +202,7 @@ $testGroup('SQLiteStore tests')
         }).then(function(result) {
             $assert.areEqual(result, [row2]);
         }, function(error) {
-            $assert.areEqual(error);
+            $assert.fail(error);
         });
     }),
 
@@ -226,7 +226,7 @@ $testGroup('SQLiteStore tests')
         }).then(function (result) {
             $assert.areEqual(result, [row2]);
         }, function (error) {
-            $assert.areEqual(error);
+            $assert.fail(error);
         });
     }),
 
@@ -250,7 +250,7 @@ $testGroup('SQLiteStore tests')
         }).then(function(result) {
             $assert.areEqual(result, [row2]);
         }, function(error) {
-            $assert.areEqual(error);
+            $assert.fail(error);
         });
     }),
 
@@ -367,7 +367,7 @@ $testGroup('SQLiteStore tests')
         return store.defineTable(tableDefinition).then(function() {
             return store.upsert(testTableName, row);
         }).then(function () {
-            // Now change column deinition to only contain id column
+            // Now change column definition to only contain id column
             delete tableDefinition.columnDefinitions.flag;
             return store.defineTable(tableDefinition);
         }).then(function () {

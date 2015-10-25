@@ -144,6 +144,9 @@ $testGroup('Validate.js',
         $assertThrows(function () { Validate.isBool(new Date()); });
         $assertThrows(function () { Validate.isBool({}); });
         $assertThrows(function () { Validate.isBool([]); });
+        $assertThrows(
+            function () { Validate.isBool(null, 'foo'); },
+            function (ex) { $assert.contains(ex.toString(), 'foo'); });
 
         Validate.isBool(false);
         Validate.isBool(true);

@@ -14,7 +14,7 @@ var Platform = require('Platforms/Platform'),
 
 exports.getColumnAffinity = function(columnType) {
     /// <summary>
-    /// Gets the appopriate column affinity for storing values of specified type in a SQLite table column
+    /// Gets the appopriate column affinity for storing values of the specified type in a SQLite table column
     /// </summary>
     /// <param name="columnType">The type of values that will be stored in the SQLite table column</param>
     /// <returns>The appropriate column affinity</returns>
@@ -81,7 +81,7 @@ exports.deserialize = function (value, columnDefinitions) {
     /// Deserializes a value read from SQLite.
     /// </summary>
     /// <param name="value">The value to deserialize.</param>
-    /// <param name="columnDefinitions">Poperty/column definitions of the object being deserialized.</param>
+    /// <param name="columnDefinitions">Property/column definitions of the object being deserialized.</param>
     /// <returns>Deserialized value</returns>
 
     if (_.isNull(value)) {
@@ -90,9 +90,6 @@ exports.deserialize = function (value, columnDefinitions) {
 
     Validate.notNull(columnDefinitions, 'columnDefinitions');
     Validate.isObject(columnDefinitions);
-    Validate.isObject(value);
-
-    columnDefinitions = columnDefinitions || {};
     Validate.isObject(value);
 
     var deserializedValue = {};
@@ -109,7 +106,7 @@ exports.deserialize = function (value, columnDefinitions) {
 
 // Serializes a property of an object for writing to SQLite
 // Note: The value can be serialized without specifying the column type, but the function needs column type
-// to implement type safety. This way we don't need to wait for the value to be deserialized to know that the value is of an incorrect type.
+// to enforce type safety. This way we don't need to wait for the value to be deserialized to know that the value is of an incorrect type.
 function serializeMember(value, columnType) {
 
     if (_.isNull(value)) {
@@ -136,7 +133,7 @@ function serializeMember(value, columnType) {
             case ColumnType.Boolean:
             case ColumnType.Bool:
                 // Be strict about the type while serializing.
-                // Allow only bool values
+                // Allow only bool values.
                 Validate.isBool(value);
                 serializedValue = convertToInteger(value);
                 break;
@@ -156,6 +153,7 @@ function serializeMember(value, columnType) {
                 break;
         }
     } catch (ex) {
+        // For any underlying error, return a meaningful error
         error = new Error(Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion', value, typeof value, columnType));
     }
     
@@ -197,8 +195,7 @@ function deserializeMember(value, targetType) {
             case ColumnType.Float:
                 deserializedValue = convertToReal(value);
                 break;
-            // We want to be able to deserialize objects with missing columns in table definition
-            case undefined:
+            case undefined: // We want to be able to deserialize objects with missing columns in table definition
                 deserializedValue = value;
                 break;
             default:
@@ -218,7 +215,7 @@ function deserializeMember(value, targetType) {
 
 function convertToText(value) {
     
-    if (_.isNull(value)) // undefined value should be converted to null
+    if (_.isNull(value)) // undefined/null value should be converted to null
         return null;
 
     if (_.isString(value)) {
@@ -230,7 +227,7 @@ function convertToText(value) {
 
 function convertToInteger(value) {
 
-    if (_.isNull(value)) // undefined value should be converted to null
+    if (_.isNull(value)) // undefined/null value should be converted to null
         return null;
 
     if (_.isInteger(value)) {
@@ -246,7 +243,7 @@ function convertToInteger(value) {
 
 function convertToBoolean(value) {
 
-    if (_.isNull(value)) // undefined value should be converted to null
+    if (_.isNull(value)) // undefined/null value should be converted to null
         return null;
 
     if (_.isBool(value)) {
@@ -262,7 +259,7 @@ function convertToBoolean(value) {
 
 function convertToDate(value) {
 
-    if (_.isNull(value)) // undefined value should be converted to null
+    if (_.isNull(value)) // undefined/null value should be converted to null
         return null;
 
     if (_.isDate(value)) {
@@ -282,7 +279,7 @@ function convertToDate(value) {
 
 function convertToReal(value) {
 
-    if (_.isNull(value)) // undefined value should be converted to null
+    if (_.isNull(value)) // undefined/null value should be converted to null
         return null;
 
     if (_.isNumber(value)) {
@@ -294,7 +291,7 @@ function convertToReal(value) {
 
 function convertToObject(value) {
 
-    if (_.isNull(value)) // undefined value should be converted to null
+    if (_.isNull(value)) // undefined/null value should be converted to null
         return null;
 
     if (_.isObject(value)) {
@@ -312,7 +309,7 @@ function convertToObject(value) {
 
 function convertToArray(value) {
 
-    if (_.isNull(value)) // undefined value should be converted to null
+    if (_.isNull(value)) // undefined/null value should be converted to null
         return null;
 
     if (_.isArray(value)) {

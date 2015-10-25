@@ -240,10 +240,9 @@ exports.isFunction = function (value) {
     /// <returns type="boolean">
     /// True if the value is a function, false othwerise.
     /// </returns>
-    return !_.isNull(value) && (typeof value == 'function');
+    return typeof value == 'function';
 };
 
-//ttodoshrirs: add UTs for changes done to all files including validate and extensions.js
 exports.isArray = function (value) {
     /// <summary>
     /// Determine if a value is an array.

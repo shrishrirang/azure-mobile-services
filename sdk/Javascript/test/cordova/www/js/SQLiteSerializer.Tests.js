@@ -16,7 +16,7 @@ $testGroup('SQLiteSerializer tests').tests(
     $test('Ensure unit tests are up to date')
     .check(function () {
 
-        // If this fails, it means the column type enum has changed.
+        // If this test fails, it means the column type enum has changed.
         // Add / update UTs to handle the changes and only then fix this test.
         $assert.areEqual(ColumnType, {
             Object: "object",

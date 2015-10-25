@@ -52,7 +52,6 @@ var MobileServiceSQLiteStore = function (dbName) {
         Validate.isString(tableDefinition.name, 'tableDefinition.name');
         Validate.notNullOrEmpty(tableDefinition.name, 'tableDefinition.name');
 
-        this._tableDefinitions[tableDefinition.name] = tableDefinition;
         var columnDefinitions = tableDefinition.columnDefinitions;
 
         // Validate the specified column types
@@ -63,6 +62,7 @@ var MobileServiceSQLiteStore = function (dbName) {
             Validate.notNullOrEmpty(columnType, 'columnType');
         }
 
+        var self = this;
         this._db.transaction(function(transaction) {
 
             var pragmaStatement = _.format("PRAGMA table_info({0});", tableDefinition.name);
@@ -92,14 +92,15 @@ var MobileServiceSQLiteStore = function (dbName) {
         }, function (error) {
             callback(error);
         }, function(result) {
+            self._tableDefinitions[tableDefinition.name] = tableDefinition;
             callback();
         });
     });
 
-    this.upsert = Platform.async(function (tableName, instances) {
+    this.upsert = Platform.async(function (tableName, data) {
         /// <summary>Updates or inserts one or more objects in the local table</summary>
-        /// <param name="tableName">Name of the local table in which the object is to be upserted</param>
-        /// <param name="instances">Object OR array of objects to be inserted/updated in the table</param>
+        /// <param name="tableName">Name of the local table in which the object(s) are to be upserted</param>
+        /// <param name="data">A single object OR an array of objects to be inserted/updated in the table</param>
         /// <returns type="Promise">
         /// A promise that is resolved when the operation is completed successfully.
         /// If the operation fails, the promise is rejected
@@ -110,7 +111,7 @@ var MobileServiceSQLiteStore = function (dbName) {
 
         // Redefine function arguments to account for the popped callback
         tableName = arguments[0];
-        instances = arguments[1];
+        data = arguments[1];
 
         Validate.isFunction(callback);
         Validate.isString(tableName, 'tableName');
@@ -118,19 +119,24 @@ var MobileServiceSQLiteStore = function (dbName) {
 
         var tableDefinition = this._tableDefinitions[tableName];
         Validate.notNull(tableDefinition, 'tableDefinition');
+        Validate.isObject(tableDefinition, 'tableDefinition');
 
         var columnDefinitions = tableDefinition.columnDefinitions;
         Validate.notNull(columnDefinitions, 'columnDefinitions');
+        Validate.isObject(columnDefinitions, 'columnDefinitions');
 
-        if (_.isNull(instances)) {
+        if (_.isNull(data)) {
             callback();
             return;
         }
 
-        Validate.isObject(instances);
+        Validate.isObject(data);
 
-        if (!_.isArray(instances)) {
-            instances = [instances];
+        var instances;
+        if (!_.isArray(data)) {
+            instances = [data];
+        } else {
+            instances = data;
         }
 
         for (var i = 0; i < instances.length; i++) {
@@ -149,7 +155,7 @@ var MobileServiceSQLiteStore = function (dbName) {
         var statements = [],
             parameters = [];
 
-        var columnNames, columnParams, updateClause, insertValues, updateValues, property, instance;
+        var columnNames, columnParams, updateExpression, insertValues, updateValues, property, instance;
         for (i = 0; i < instances.length; i++) {
 
             if (_.isNull(instances[i])) {
@@ -158,37 +164,42 @@ var MobileServiceSQLiteStore = function (dbName) {
                 
             columnNames = '';
             columnParams = '';
-            updateClause = '';
+            updateExpression = '';
             insertValues = [];
             updateValues = [];
             instance = instances[i];
 
             for (property in instance) {
+                // Add comma, if this is not the first column
                 if (columnNames !== '') {
                     columnNames += ', ';
                     columnParams += ', ';
                 }
 
-                if (updateClause !== '') {
-                    updateClause += ', ';
+                // Add comma, if this is not the first update expression
+                if (updateExpression !== '') {
+                    updateExpression += ', ';
                 }
 
                 columnNames += property;
                 columnParams += '?';
 
+                // We don't want to update the id column
                 if (property !== idPropertyName) {
-                    updateClause += property + ' = ?';
+                    updateExpression += property + ' = ?';
                     updateValues.push(instance[property]);
                 }
 
                 insertValues.push(instance[property]);
             }
 
+            // Insert the instance. If one with the same id already exists, ignore it.
             statements.push(_.format("INSERT OR IGNORE INTO {0} ({1}) VALUES ({2})", tableName, columnNames, columnParams));
             parameters.push(insertValues);
 
+            // If there is any property other than id that needs to be upserted, update the record.
             if (updateValues.length > 0) {
-                statements.push(_.format("UPDATE {0} SET {1} WHERE {2} = ? COLLATE NOCASE", tableName, updateClause, idPropertyName));
+                statements.push(_.format("UPDATE {0} SET {1} WHERE {2} = ? COLLATE NOCASE", tableName, updateExpression, idPropertyName));
                 updateValues.push(instance[idPropertyName]);
                 parameters.push(updateValues);
             }
@@ -230,9 +241,11 @@ var MobileServiceSQLiteStore = function (dbName) {
         
         var tableDefinition = this._tableDefinitions[tableName];
         Validate.notNull(tableDefinition, 'tableDefinition');
+        Validate.isObject(tableDefinition, 'tableDefinition');
 
         var columnDefinitions = tableDefinition.columnDefinitions;
         Validate.notNull(columnDefinitions, 'columnDefinitions');
+        Validate.isObject(columnDefinitions, 'columnDefinitions');
 
         var lookupStatement = _.format("SELECT * FROM [{0}] WHERE {1} = ? COLLATE NOCASE", tableName, idPropertyName);
 
@@ -278,34 +291,30 @@ var MobileServiceSQLiteStore = function (dbName) {
             tableName = tableNameOrQuery;
 
             if (_.isNull(ids)) {
-                callback();
+                callback(); // there's nothing to be deleted
                 return;
-            } else if (!_.isArray(ids)) {
-                // If a single id is specified, convert it to an array and proceed
+            } else if (!_.isArray(ids)) { // If a single id is specified, convert it to an array and proceed
                 ids = [ids];
             }
         } else if (_.isObject(tableNameOrQuery)) {
             query = tableNameOrQuery;
-
         } else {
-            throw _.format(
-                Platform.getResourceString("TypeCheckError"),
-                'tableNameOrQuery',
-                'Object or String',
-                typeof tableNameOrQuery);
+            throw _.format(Platform.getResourceString("TypeCheckError"), 'tableNameOrQuery', 'Object or String', typeof tableNameOrQuery);
         }
 
         if (query) {
             var self = this;
+
+            // Run the query and get the list of records to be deleted
             this.read(query).then(function (result) {
-
                 try {
-
                     if (!_.isArray(result)) {
                         result = result.result;
+                        Validate.isArray(result);
                     }
 
                     ids = result.map(function (record) {
+                        Validate.isObject(record);
                         return record[idPropertyName];
                     });
                     self._del(query.getComponents().table, ids, callback);
@@ -320,7 +329,11 @@ var MobileServiceSQLiteStore = function (dbName) {
         }
     });
 
-    this._del = function(tableName, ids, callback) {
+    this._del = function (tableName, ids, callback) {
+
+        // Perform basic validation. For the rest just rely on SQL.
+        Validate.isString(tableName);
+        Validate.notNullOrEmpty(tableName);
 
         // SQL DELETE statements corresponding to each record we want to delete from the table.
         var deleteStatements = [],
@@ -329,6 +342,7 @@ var MobileServiceSQLiteStore = function (dbName) {
         for (var i = 0; i < ids.length; i++) {
             if (!_.isNull(ids[i])) {
                 Validate.isValidId(ids[i]);
+
                 deleteStatements.push(_.format("DELETE FROM {0} WHERE {1} = ? COLLATE NOCASE", tableName, idPropertyName));
                 deleteParams.push([ids[i]]);
             }
@@ -369,9 +383,11 @@ var MobileServiceSQLiteStore = function (dbName) {
 
         var tableDefinition = this._tableDefinitions[query.getComponents().table];
         Validate.notNull(tableDefinition, 'tableDefinition');
+        Validate.isObject(tableDefinition, 'tableDefinition');
 
         var columnDefinitions = tableDefinition.columnDefinitions;
         Validate.notNull(columnDefinitions, 'columnDefinitions');
+        Validate.isObject(columnDefinitions, 'columnDefinitions');
 
         var count,
             result = [],
