@@ -656,9 +656,9 @@ $testGroup('SQLiteSerializer tests').tests(
         }
     }),
 
-    $test('deserialize: property of type ttodoshrirs, different column types')
+    $test('deserialize: property with a boolean true value, different column types')
     .check(function () {
-        var value = { val: { a: 1 } },
+        var value = { val: true },
             columnDefinitions = {},
             deserialize = function () {
                 SQLiteSerializer.deserialize(value, columnDefinitions);
@@ -670,14 +670,20 @@ $testGroup('SQLiteSerializer tests').tests(
             columnDefinitions.val = ColumnType[c];
 
             switch (ColumnType[c]) {
-                case ColumnType.Object:
+                case ColumnType.Boolean:
+                case ColumnType.Bool:
                     deserializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
                     $assert.areEqual(deserializedValue, value);
                     break;
                 case ColumnType.String:
                 case ColumnType.Text:
                     deserializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
-                    $assert.areEqual(deserializedValue, { val: JSON.stringify(value.val) });
+                    $assert.areEqual(deserializedValue, { val: 'true' });
+                    break;
+                case ColumnType.Integer:
+                case ColumnType.Int:
+                    deserializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
+                    $assert.areEqual(deserializedValue, { val: 1 });
                     break;
                     // Deserializing to any other type should fail
                 default:
@@ -687,9 +693,9 @@ $testGroup('SQLiteSerializer tests').tests(
         }
     }),
 
-    $test('deserialize: property of type ttodoshrirs, different column types')
+    $test('deserialize: property with a boolean false value, different column types')
     .check(function () {
-        var value = { val: { a: 1 } },
+        var value = { val: false },
             columnDefinitions = {},
             deserialize = function () {
                 SQLiteSerializer.deserialize(value, columnDefinitions);
@@ -701,14 +707,20 @@ $testGroup('SQLiteSerializer tests').tests(
             columnDefinitions.val = ColumnType[c];
 
             switch (ColumnType[c]) {
-                case ColumnType.Object:
+                case ColumnType.Boolean:
+                case ColumnType.Bool:
                     deserializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
                     $assert.areEqual(deserializedValue, value);
                     break;
                 case ColumnType.String:
                 case ColumnType.Text:
                     deserializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
-                    $assert.areEqual(deserializedValue, { val: JSON.stringify(value.val) });
+                    $assert.areEqual(deserializedValue, { val: 'false' });
+                    break;
+                case ColumnType.Integer:
+                case ColumnType.Int:
+                    deserializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
+                    $assert.areEqual(deserializedValue, { val: 0 });
                     break;
                     // Deserializing to any other type should fail
                 default:
@@ -718,9 +730,9 @@ $testGroup('SQLiteSerializer tests').tests(
         }
     }),
 
-    $test('deserialize: property of type ttodoshrirs, different column types')
+    $test('deserialize: property of type float, different column types')
     .check(function () {
-        var value = { val: { a: 1 } },
+        var value = { val: -1.5 },
             columnDefinitions = {},
             deserialize = function () {
                 SQLiteSerializer.deserialize(value, columnDefinitions);
@@ -732,14 +744,15 @@ $testGroup('SQLiteSerializer tests').tests(
             columnDefinitions.val = ColumnType[c];
 
             switch (ColumnType[c]) {
-                case ColumnType.Object:
+                case ColumnType.Float:
+                case ColumnType.Real:
                     deserializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
                     $assert.areEqual(deserializedValue, value);
                     break;
                 case ColumnType.String:
                 case ColumnType.Text:
                     deserializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
-                    $assert.areEqual(deserializedValue, { val: JSON.stringify(value.val) });
+                    $assert.areEqual(deserializedValue, { val: '-1.5' });
                     break;
                     // Deserializing to any other type should fail
                 default:
@@ -749,9 +762,9 @@ $testGroup('SQLiteSerializer tests').tests(
         }
     }),
 
-    $test('deserialize: property of type ttodoshrirs, different column types')
+    $test('deserialize: property of type date, different column types')
     .check(function () {
-        var value = { val: { a: 1 } },
+        var value = { val: new Date(2011, 10, 11, 12, 13, 14) },
             columnDefinitions = {},
             deserialize = function () {
                 SQLiteSerializer.deserialize(value, columnDefinitions);
@@ -763,14 +776,14 @@ $testGroup('SQLiteSerializer tests').tests(
             columnDefinitions.val = ColumnType[c];
 
             switch (ColumnType[c]) {
-                case ColumnType.Object:
+                case ColumnType.Date:
                     deserializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
                     $assert.areEqual(deserializedValue, value);
                     break;
                 case ColumnType.String:
                 case ColumnType.Text:
                     deserializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
-                    $assert.areEqual(deserializedValue, { val: JSON.stringify(value.val) });
+                    $assert.areEqual(deserializedValue, { val: '\"2011-11-11T20:13:14.000Z\"' });
                     break;
                     // Deserializing to any other type should fail
                 default:
@@ -780,284 +793,65 @@ $testGroup('SQLiteSerializer tests').tests(
         }
     }),
 
-    $test('deserialize: property of type ttodoshrirs, different column types')
+    $test('deserialize: property with null value, different column types')
     .check(function () {
-        var value = { val: { a: 1 } },
-            columnDefinitions = {},
-            deserialize = function () {
-                SQLiteSerializer.deserialize(value, columnDefinitions);
-            };
+        var value = { val: null },
+            columnDefinitions = {};
 
-        var deserializedValue;
         for (var c in ColumnType) {
 
             columnDefinitions.val = ColumnType[c];
 
-            switch (ColumnType[c]) {
-                case ColumnType.Object:
-                    deserializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
-                    $assert.areEqual(deserializedValue, value);
-                    break;
-                case ColumnType.String:
-                case ColumnType.Text:
-                    deserializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
-                    $assert.areEqual(deserializedValue, { val: JSON.stringify(value.val) });
-                    break;
-                    // Deserializing to any other type should fail
-                default:
-                    $assertThrows(deserialize);
-                    break;
-            }
+            $assert.areEqual(SQLiteSerializer.deserialize(value, columnDefinitions), value);
         }
     }),
 
-    $test('deserialize: property of type ttodoshrirs, different column types')
+    $test('deserialize: property with undefined value, different column types')
     .check(function () {
-        var value = { val: { a: 1 } },
-            columnDefinitions = {},
-            deserialize = function () {
-                SQLiteSerializer.deserialize(value, columnDefinitions);
-            };
+        var value = { val: undefined },
+            columnDefinitions = {};
 
-        var deserializedValue;
         for (var c in ColumnType) {
 
             columnDefinitions.val = ColumnType[c];
 
-            switch (ColumnType[c]) {
-                case ColumnType.Object:
-                    deserializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
-                    $assert.areEqual(deserializedValue, value);
-                    break;
-                case ColumnType.String:
-                case ColumnType.Text:
-                    deserializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
-                    $assert.areEqual(deserializedValue, { val: JSON.stringify(value.val) });
-                    break;
-                    // Deserializing to any other type should fail
-                default:
-                    $assertThrows(deserialize);
-                    break;
-            }
+            $assert.areEqual(SQLiteSerializer.deserialize(value, columnDefinitions), {val: null});
         }
     }),
 
-    $test('deserialize: property of type ttodoshrirs, different column types')
+    $test('deserialize: Attempting to deserialize to an unsupported column should fail')
     .check(function () {
-        var value = { val: { a: 1 } },
-            columnDefinitions = {},
+        var value = {},
+            columnDefinitions = { val: 'someunsupportedtype' },
             deserialize = function () {
                 SQLiteSerializer.deserialize(value, columnDefinitions);
             };
 
-        var deserializedValue;
-        for (var c in ColumnType) {
+        // object
+        value.val = { a: 1 };
+        $assertThrows(deserialize);
 
-            columnDefinitions.val = ColumnType[c];
+        // array
+        value.val = [1, 2];
+        $assertThrows(deserialize);
 
-            switch (ColumnType[c]) {
-                case ColumnType.Object:
-                    deserializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
-                    $assert.areEqual(deserializedValue, value);
-                    break;
-                case ColumnType.String:
-                case ColumnType.Text:
-                    deserializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
-                    $assert.areEqual(deserializedValue, { val: JSON.stringify(value.val) });
-                    break;
-                    // Deserializing to any other type should fail
-                default:
-                    $assertThrows(deserialize);
-                    break;
-            }
-        }
+        // integer
+        value.val = 5;
+        $assertThrows(deserialize);
+
+        // float
+        value.val = -5.5;
+        $assertThrows(deserialize);
+
+        // string
+        value.val = 'somestring';
+        $assertThrows(deserialize);
+
+        // bool
+        value.val = true;
+        $assertThrows(deserialize);
     }),
 
-    $test('deserialize: property of type ttodoshrirs, different column types')
-    .check(function () {
-        var value = { val: { a: 1 } },
-            columnDefinitions = {},
-            deserialize = function () {
-                SQLiteSerializer.deserialize(value, columnDefinitions);
-            };
-
-        var deserializedValue;
-        for (var c in ColumnType) {
-
-            columnDefinitions.val = ColumnType[c];
-
-            switch (ColumnType[c]) {
-                case ColumnType.Object:
-                    deserializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
-                    $assert.areEqual(deserializedValue, value);
-                    break;
-                case ColumnType.String:
-                case ColumnType.Text:
-                    deserializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
-                    $assert.areEqual(deserializedValue, { val: JSON.stringify(value.val) });
-                    break;
-                    // Deserializing to any other type should fail
-                default:
-                    $assertThrows(deserialize);
-                    break;
-            }
-        }
-    }),
-
-    $test('deserialize: property of type ttodoshrirs, different column types')
-    .check(function () {
-        var value = { val: { a: 1 } },
-            columnDefinitions = {},
-            deserialize = function () {
-                SQLiteSerializer.deserialize(value, columnDefinitions);
-            };
-
-        var deserializedValue;
-        for (var c in ColumnType) {
-
-            columnDefinitions.val = ColumnType[c];
-
-            switch (ColumnType[c]) {
-                case ColumnType.Object:
-                    deserializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
-                    $assert.areEqual(deserializedValue, value);
-                    break;
-                case ColumnType.String:
-                case ColumnType.Text:
-                    deserializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
-                    $assert.areEqual(deserializedValue, { val: JSON.stringify(value.val) });
-                    break;
-                    // Deserializing to any other type should fail
-                default:
-                    $assertThrows(deserialize);
-                    break;
-            }
-        }
-    }),
-
-    $test('deserialize: property of type ttodoshrirs, different column types')
-    .check(function () {
-        var value = { val: { a: 1 } },
-            columnDefinitions = {},
-            deserialize = function () {
-                SQLiteSerializer.deserialize(value, columnDefinitions);
-            };
-
-        var deserializedValue;
-        for (var c in ColumnType) {
-
-            columnDefinitions.val = ColumnType[c];
-
-            switch (ColumnType[c]) {
-                case ColumnType.Object:
-                    deserializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
-                    $assert.areEqual(deserializedValue, value);
-                    break;
-                case ColumnType.String:
-                case ColumnType.Text:
-                    deserializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
-                    $assert.areEqual(deserializedValue, { val: JSON.stringify(value.val) });
-                    break;
-                    // Deserializing to any other type should fail
-                default:
-                    $assertThrows(deserialize);
-                    break;
-            }
-        }
-    }),
-
-    $test('deserialize: property of type ttodoshrirs, different column types')
-    .check(function () {
-        var value = { val: { a: 1 } },
-            columnDefinitions = {},
-            deserialize = function () {
-                SQLiteSerializer.deserialize(value, columnDefinitions);
-            };
-
-        var deserializedValue;
-        for (var c in ColumnType) {
-
-            columnDefinitions.val = ColumnType[c];
-
-            switch (ColumnType[c]) {
-                case ColumnType.Object:
-                    deserializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
-                    $assert.areEqual(deserializedValue, value);
-                    break;
-                case ColumnType.String:
-                case ColumnType.Text:
-                    deserializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
-                    $assert.areEqual(deserializedValue, { val: JSON.stringify(value.val) });
-                    break;
-                    // Deserializing to any other type should fail
-                default:
-                    $assertThrows(deserialize);
-                    break;
-            }
-        }
-    }),
-
-    $test('deserialize: property of type ttodoshrirs, different column types')
-    .check(function () {
-        var value = { val: { a: 1 } },
-            columnDefinitions = {},
-            deserialize = function () {
-                SQLiteSerializer.deserialize(value, columnDefinitions);
-            };
-
-        var deserializedValue;
-        for (var c in ColumnType) {
-
-            columnDefinitions.val = ColumnType[c];
-
-            switch (ColumnType[c]) {
-                case ColumnType.Object:
-                    deserializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
-                    $assert.areEqual(deserializedValue, value);
-                    break;
-                case ColumnType.String:
-                case ColumnType.Text:
-                    deserializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
-                    $assert.areEqual(deserializedValue, { val: JSON.stringify(value.val) });
-                    break;
-                    // Deserializing to any other type should fail
-                default:
-                    $assertThrows(deserialize);
-                    break;
-            }
-        }
-    }),
-
-    $test('deserialize: property of type ttodoshrirs, different column types')
-    .check(function () {
-        var value = { val: { a: 1 } },
-            columnDefinitions = {},
-            deserialize = function () {
-                SQLiteSerializer.deserialize(value, columnDefinitions);
-            };
-
-        var deserializedValue;
-        for (var c in ColumnType) {
-
-            columnDefinitions.val = ColumnType[c];
-
-            switch (ColumnType[c]) {
-                case ColumnType.Object:
-                    deserializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
-                    $assert.areEqual(deserializedValue, value);
-                    break;
-                case ColumnType.String:
-                case ColumnType.Text:
-                    deserializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
-                    $assert.areEqual(deserializedValue, { val: JSON.stringify(value.val) });
-                    break;
-                    // Deserializing to any other type should fail
-                default:
-                    $assertThrows(deserialize);
-                    break;
-            }
-        }
-    }),
 
     $test('roundtripping: all types')
     .check(function () {

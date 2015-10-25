@@ -116,41 +116,51 @@ function serializeMember(value, columnType) {
         return null;
     }
 
-    var serializedValue;
+    var serializedValue, error;
 
-    switch (columnType) {
-        case ColumnType.Object:
-            Validate.isObject(value);
-            serializedValue = convertToText(value);
-            break;
-        case ColumnType.Array:
-            Validate.isArray(value);
-            serializedValue = convertToText(value);
-            break;
-        case ColumnType.String:
-        case ColumnType.Text:
-            serializedValue = convertToText(value);
-            break;
-        case ColumnType.Boolean:
-        case ColumnType.Bool:
-            // Be strict about the type while serializing.
-            // Allow only bool values
-            Validate.isBool(value);
-            serializedValue = convertToInteger(value);
-            break;
-        case ColumnType.Integer:
-        case ColumnType.Int:
-            serializedValue = convertToInteger(value);
-            break;
-        case ColumnType.Date:
-            serializedValue = convertToDate(value);
-            break;
-        case ColumnType.Real:
-        case ColumnType.Float:
-            serializedValue = convertToReal(value);
-            break;
-        default:
-            throw new Error(_.format(Platform.getResourceString("SQLiteHelper_UnsupportedColumnType"), columnType));
+    try {
+
+        switch (columnType) {
+            case ColumnType.Object:
+                Validate.isObject(value);
+                serializedValue = convertToText(value);
+                break;
+            case ColumnType.Array:
+                Validate.isArray(value);
+                serializedValue = convertToText(value);
+                break;
+            case ColumnType.String:
+            case ColumnType.Text:
+                serializedValue = convertToText(value);
+                break;
+            case ColumnType.Boolean:
+            case ColumnType.Bool:
+                // Be strict about the type while serializing.
+                // Allow only bool values
+                Validate.isBool(value);
+                serializedValue = convertToInteger(value);
+                break;
+            case ColumnType.Integer:
+            case ColumnType.Int:
+                serializedValue = convertToInteger(value);
+                break;
+            case ColumnType.Date:
+                serializedValue = convertToDate(value);
+                break;
+            case ColumnType.Real:
+            case ColumnType.Float:
+                serializedValue = convertToReal(value);
+                break;
+            default:
+                error = new Error(_.format(Platform.getResourceString("SQLiteHelper_UnsupportedColumnType"), columnType));
+                break;
+        }
+    } catch (ex) {
+        error = new Error(Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion', value, typeof value, columnType));
+    }
+    
+    if (!_.isNull(error)) {
+        throw error;
     }
 
     return serializedValue;
@@ -158,40 +168,49 @@ function serializeMember(value, columnType) {
 
 // Deserializes a property of an object read from SQLite
 function deserializeMember(value, targetType) {
-    var deserializedValue;
+    var deserializedValue, error;
 
-    switch (targetType) {
-        case ColumnType.Object:
-            deserializedValue = convertToObject(value);
-            break;
-        case ColumnType.Array:
-            deserializedValue = convertToArray(value);
-            break;
-        case ColumnType.String:
-        case ColumnType.Text:
-            deserializedValue = convertToText(value);
-            break;
-        case ColumnType.Integer:
-        case ColumnType.Int:
-            deserializedValue = convertToInteger(value);
-            break;
-        case ColumnType.Boolean:
-        case ColumnType.Bool:
-            deserializedValue = convertToBoolean(value);
-            break;
-        case ColumnType.Date:
-            deserializedValue = convertToDate(value);
-            break;
-        case ColumnType.Real:
-        case ColumnType.Float:
-            deserializedValue = convertToReal(value);
-            break;
-        // We want to be able to deserialize objects with missing columns in table definition
-        case undefined:
-            deserializedValue = value;
-            break;
-        default:
-            throw new Error(Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion', value, typeof value, targetType));
+    try {
+        switch (targetType) {
+            case ColumnType.Object:
+                deserializedValue = convertToObject(value);
+                break;
+            case ColumnType.Array:
+                deserializedValue = convertToArray(value);
+                break;
+            case ColumnType.String:
+            case ColumnType.Text:
+                deserializedValue = convertToText(value);
+                break;
+            case ColumnType.Integer:
+            case ColumnType.Int:
+                deserializedValue = convertToInteger(value);
+                break;
+            case ColumnType.Boolean:
+            case ColumnType.Bool:
+                deserializedValue = convertToBoolean(value);
+                break;
+            case ColumnType.Date:
+                deserializedValue = convertToDate(value);
+                break;
+            case ColumnType.Real:
+            case ColumnType.Float:
+                deserializedValue = convertToReal(value);
+                break;
+            // We want to be able to deserialize objects with missing columns in table definition
+            case undefined:
+                deserializedValue = value;
+                break;
+            default:
+                error = new Error(_.format(Platform.getResourceString("SQLiteHelper_UnsupportedColumnType"), targetType));
+                break;
+        }
+    } catch (ex) {
+        error = new Error(Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion', value, typeof value, targetType));
+    }
+
+    if (!_.isNull(error)) {
+        throw error;
     }
 
     return deserializedValue;
@@ -199,6 +218,9 @@ function deserializeMember(value, targetType) {
 
 function convertToText(value) {
     
+    if (_.isNull(value)) // undefined value should be converted to null
+        return null;
+
     if (_.isString(value)) {
         return value;
     }
@@ -208,10 +230,10 @@ function convertToText(value) {
 
 function convertToInteger(value) {
 
-    if (_.isNull(value))
+    if (_.isNull(value)) // undefined value should be converted to null
         return null;
-    
-    if(_.isInteger(value)) {
+
+    if (_.isInteger(value)) {
         return value;
     }
 
@@ -224,7 +246,7 @@ function convertToInteger(value) {
 
 function convertToBoolean(value) {
 
-    if (_.isNull(value))
+    if (_.isNull(value)) // undefined value should be converted to null
         return null;
 
     if (_.isBool(value)) {
@@ -240,11 +262,19 @@ function convertToBoolean(value) {
 
 function convertToDate(value) {
 
-    if (_.isNull(value))
+    if (_.isNull(value)) // undefined value should be converted to null
         return null;
 
     if (_.isDate(value)) {
         return value;
+    }
+
+    if (_.isString(value)) {
+        var milliseconds = Date.parse(value);
+
+        if (_.isInteger(milliseconds)) {
+            return new Date(milliseconds);
+        }
     }
 
     throw new Error(_.format(Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion'), value, typeof value, 'Date'));
@@ -252,7 +282,7 @@ function convertToDate(value) {
 
 function convertToReal(value) {
 
-    if (_.isNull(value))
+    if (_.isNull(value)) // undefined value should be converted to null
         return null;
 
     if (_.isNumber(value)) {
@@ -263,28 +293,27 @@ function convertToReal(value) {
 }
 
 function convertToObject(value) {
+
+    if (_.isNull(value)) // undefined value should be converted to null
+        return null;
+
     if (_.isObject(value)) {
         return value;
     }
 
-    var result;
-    try {
-        result = JSON.parse(value);
+    Validate.isString(value);
+    var result = JSON.parse(value);
 
-        // Make sure the deserialized value is indeed an object
-        Validate.isObject(result);
-    } catch (ex) {
-        // throw a meaningful exception
-        throw new Error(_.format(Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion'), value, typeof value, 'Object'));
-    }
+    // Make sure the deserialized value is indeed an object
+    Validate.isObject(result);
 
     return result;
 }
 
 function convertToArray(value) {
-    if (_.isNull(value)) {
+
+    if (_.isNull(value)) // undefined value should be converted to null
         return null;
-    }
 
     if (_.isArray(value)) {
         return value;
