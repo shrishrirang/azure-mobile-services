@@ -129,6 +129,20 @@ $testGroup('SQLiteSerializer tests').tests(
         $assert.areEqual(deserializedValue, value);
     }),
 
+    $test('serialization: null column definition')
+    .check(function () {
+        $assertThrows(function () {
+            SQLiteSerializer.serialize({ a: 1 }, null);
+        });
+    }),
+
+    $test('deserialization: undefined column definition')
+    .check(function () {
+        $assertThrows(function () {
+            SQLiteSerializer.serialize({ a: 1 });
+        });
+    }),
+
     $test('deserialization: null column definition')
     .check(function () {
         $assertThrows(function () {
@@ -503,8 +517,8 @@ $testGroup('SQLiteSerializer tests').tests(
                 case ColumnType.Object:
                 case ColumnType.String:
                 case ColumnType.Text:
-                    var serializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
-                    $assert.areEqual(serializedValue, { val: JSON.stringify(value.val) });
+                    var deserializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
+                    $assert.areEqual(deserializedValue, { val: JSON.stringify(value.val) });
                     break;
                 // Deserializing as any other type should fail
                 default:
