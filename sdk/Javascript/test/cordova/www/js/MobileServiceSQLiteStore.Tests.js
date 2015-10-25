@@ -173,7 +173,7 @@ $testGroup('SQLiteStore tests')
             columnDefinitions: {}
         };
 
-        tableDefinition.columnDefinitions['id'] = WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer;
+        tableDefinition.columnDefinitions.id = WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer;
         tableDefinition.columnDefinitions['*'] = WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer;
 
         return createStore().defineTable(tableDefinition).then(function () {
