@@ -7,7 +7,7 @@
 /// <reference path='.\Generated\Tests.js' />
 /// <reference path='.\Generated\MobileServices.Cordova.Internals.js' />
 
-var Validate = require('Validate'),
+var Validate = require('../../../../src/Utilities/Validate'),
     Platform = require('Platforms/Platform'),
     SQLiteSerializer = require('../../../../src/Platforms/cordova/SQLiteSerializer');
 
