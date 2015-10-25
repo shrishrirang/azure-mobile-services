@@ -165,6 +165,24 @@ exports.isInteger = function (value, name) {
     }
 };
 
+exports.isBool = function (value, name) {
+    /// <summary>
+    /// Ensure the value is a bool.
+    /// </summary>
+    /// <param name="value" mayBeNull="true">The value to check.</param>
+    /// <param name="name" mayBeNull="true" optional="true" type="String">
+    /// Optional name of the value to throw.
+    /// </param>
+
+    if (!_.isBool(value)) {
+        throw _.format(
+            Platform.getResourceString("TypeCheckError"),
+            name || 'Value',
+            'number',
+            typeof value);
+    }
+};
+
 exports.isString = function (value, name) {
     /// <summary>
     /// Ensure the value is a string.

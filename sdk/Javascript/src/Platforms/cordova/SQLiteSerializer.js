@@ -112,22 +112,39 @@ exports.deserialize = function (value, columnDefinitions) {
 // to implement type safety. This way we don't need to wait for the value to be deserialized to know that the value is of an incorrect type.
 function serializeMember(value, columnType) {
 
+    if (_.isNull(value)) {
+        return null;
+    }
+
     var serializedValue;
 
     switch (columnType) {
         case ColumnType.Object:
+            Validate.isObject(value);
+            serializedValue = convertToText(value);
+            break;
         case ColumnType.Array:
+            Validate.isArray(value);
+            serializedValue = convertToText(value);
+            break;
         case ColumnType.String:
         case ColumnType.Text:
             serializedValue = convertToText(value);
             break;
-        case ColumnType.Integer:
-        case ColumnType.Int:
         case ColumnType.Boolean:
         case ColumnType.Bool:
+            // Be strict about the type while serializing.
+            // Allow only bool values
+            Validate.isBool(value);
+            serializedValue = value;
+            break;
+        case ColumnType.Integer:
+        case ColumnType.Int:
             serializedValue = convertToInteger(value);
             break;
         case ColumnType.Date:
+            // Be strict about the type while serializing.
+            Validate.isDate(value);
             serializedValue = convertToDate(value);
             break;
         case ColumnType.Real:
@@ -201,10 +218,6 @@ function convertToInteger(value) {
         return value ? 1 : 0;
     }
 
-    if (_.isDate(value)) {
-        return value.getTime(); // Integer representation of date in terms of number of milli seconds since 1 January 1970 00:00:00 UTC (Unix Epoch).
-    }
-
     throw new Error(_.format(Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion'), value, typeof value, 'integer'));
 }
 
@@ -227,8 +240,13 @@ function convertToDate(value) {
         return value;
     }
 
-    if (_.isInteger(value) || _.isString(value)) {
-        return new Date(value);
+    var milliseconds = value;
+    if (_.isString(value)) {
+        milliseconds = Date.parse(value);
+    }
+
+    if (_.isInteger(milliseconds)) {
+        return new Date(milliseconds);
     }
 
     throw new Error(_.format(Platform.getResourceString('SQLiteHelper_UnsupportedTypeConversion'), value, typeof value, 'Date'));

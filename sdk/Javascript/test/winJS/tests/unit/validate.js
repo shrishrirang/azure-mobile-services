@@ -133,6 +133,22 @@ $testGroup('Validate.js',
             function (ex) { $assert.contains(ex.toString(), 'foo'); });
     }),
 
+    $test('isBool')
+    .description('Verify Validate.isBool correctly identifies bool values.')
+    .check(function () {
+        $assertThrows(function() { Validate.isBool(null); });
+        $assertThrows(function () { Validate.isBool(); });
+        $assertThrows(function () { Validate.isBool(12); });
+        $assertThrows(function () { Validate.isBool('test'); });
+        $assertThrows(function () { Validate.isBool(function() {}); });
+        $assertThrows(function () { Validate.isBool(new Date()); });
+        $assertThrows(function () { Validate.isBool({}); });
+        $assertThrows(function () { Validate.isBool([]); });
+
+        Validate.isBool(false);
+        Validate.isBool(true);
+    }),
+
     $test('isString')
     .description('Verify Validate.isString correctly identifies string values.')
     .check(function () {
@@ -153,12 +169,12 @@ $testGroup('Validate.js',
         Validate.isObject(null);
         Validate.isObject({});
         Validate.isObject({ id: 5 });
-        $assertThrows(function () { Validate.isObject(0); });
-        $assertThrows(function () { Validate.isObject('foo'); });
-        $assertThrows(function () { Validate.isObject(new Date()); });
+        $assertThrows(function() { Validate.isObject(0); });
+        $assertThrows(function() { Validate.isObject('foo'); });
+        $assertThrows(function() { Validate.isObject(new Date()); });
         $assertThrows(
-            function () { Validate.isObject(10, 'foo'); },
-            function (ex) { $assert.contains(ex.toString(), 'foo'); });
+            function() { Validate.isObject(10, 'foo'); },
+            function(ex) { $assert.contains(ex.toString(), 'foo'); });
     }),
 
     $test('isFunction')
@@ -166,13 +182,13 @@ $testGroup('Validate.js',
     .check(function () {
         Validate.isFunction(function () { });
 
-        $assertThrows(function () { Validate.isFunction(null) });
-        $assertThrows(function () { Validate.isFunction() });
-        $assertThrows(function () { Validate.isFunction('a') });
-        $assertThrows(function () { Validate.isFunction({}) });
-        $assertThrows(function () { Validate.isFunction(1) });
-        $assertThrows(function () { Validate.isFunction([]) });
-        $assertThrows(function () { Validate.isFunction(false) });
+        $assertThrows(function() { Validate.isFunction(null); });
+        $assertThrows(function() { Validate.isFunction(); });
+        $assertThrows(function() { Validate.isFunction('a'); });
+        $assertThrows(function() { Validate.isFunction({}); });
+        $assertThrows(function() { Validate.isFunction(1); });
+        $assertThrows(function() { Validate.isFunction([]); });
+        $assertThrows(function() { Validate.isFunction(false); });
 
         $assertThrows(function() {
             Validate.isFunction(false, 'foo');
@@ -187,11 +203,11 @@ $testGroup('Validate.js',
         Validate.length('', 0);
         Validate.length('a', 1);
         Validate.length('ab', 2);
-        $assertThrows(function () { Validate.length(null, 1); });
-        $assertThrows(function () { Validate.length(null, null); });
-        $assertThrows(function () { Validate.length('foo', 2); });
+        $assertThrows(function() { Validate.length(null, 1); });
+        $assertThrows(function() { Validate.length(null, null); });
+        $assertThrows(function() { Validate.length('foo', 2); });
         $assertThrows(
-            function () { Validate.length('test', 2, 'foo'); },
-            function (ex) { $assert.contains(ex.toString(), 'foo'); });
+            function() { Validate.length('test', 2, 'foo'); },
+            function(ex) { $assert.contains(ex.toString(), 'foo'); });
     })
 );
