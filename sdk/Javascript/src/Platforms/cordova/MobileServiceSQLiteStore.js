@@ -199,7 +199,7 @@ var MobileServiceSQLiteStore = function (dbName) {
 
             // If there is any property other than id that needs to be upserted, update the record.
             if (updateValues.length > 0) {
-                statements.push(_.format("UPDATE {0} SET {1} WHERE {2} = ? COLLATE NOCASE", tableName, updateExpression, idPropertyName));
+                statements.push(_.format("UPDATE {0} SET {1} WHERE {2} = ?", tableName, updateExpression, idPropertyName));
                 updateValues.push(instance[idPropertyName]);
                 parameters.push(updateValues);
             }
