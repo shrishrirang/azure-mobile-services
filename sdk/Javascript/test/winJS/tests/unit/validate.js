@@ -161,6 +161,26 @@ $testGroup('Validate.js',
             function (ex) { $assert.contains(ex.toString(), 'foo'); });
     }),
 
+    $test('isFunction')
+    .description('Verify Validate.isFunction correctly identifies function values.')
+    .check(function () {
+        Validate.isFunction(function () { });
+
+        $assertThrows(function () { Validate.isFunction(null) });
+        $assertThrows(function () { Validate.isFunction() });
+        $assertThrows(function () { Validate.isFunction('a') });
+        $assertThrows(function () { Validate.isFunction({}) });
+        $assertThrows(function () { Validate.isFunction(1) });
+        $assertThrows(function () { Validate.isFunction([]) });
+        $assertThrows(function () { Validate.isFunction(false) });
+
+        $assertThrows(function() {
+            Validate.isFunction(false, 'foo');
+        }, function(ex) {
+            $assert.contains(ex.toString(), 'foo');
+        });
+    }),
+
     $test('length')
     .description('Verify Validate.length correctly identifies strings of a given length')
     .check(function () {
