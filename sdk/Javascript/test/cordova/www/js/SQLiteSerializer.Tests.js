@@ -110,6 +110,39 @@ $testGroup('SQLiteSerializer tests').tests(
         });
     }),
 
+    $test('deserialization: missing column in definition')
+    .check(function () {
+        var value = {
+            object: { a: 1, b: 'str', c: [1, 2] },
+            array: [1, 2, { a: 1 }],
+            string: 'somestring',
+            text: 'sometext',
+            integer: 5,
+            int: 6,
+            bool: true,
+            boolean: false,
+            real: 1.5,
+            float: 2.2,
+            date: new Date(2001, 1, 1)
+        };
+        var deserializedValue = SQLiteSerializer.deserialize(value, { /* all columns missing from definition */ });
+        $assert.areEqual(deserializedValue, value);
+    }),
+
+    $test('deserialization: null column definition')
+    .check(function () {
+        $assertThrows(function () {
+            SQLiteSerializer.deserialize({ a: 1 }, null);
+        });
+    }),
+
+    $test('deserialization: undefined column definition')
+    .check(function () {
+        $assertThrows(function () {
+            SQLiteSerializer.deserialize({ a: 1 });
+        });
+    }),
+
     $test('property of type object, different column types')
     .check(function () {
         var value = { val: {} },
@@ -451,6 +484,34 @@ $testGroup('SQLiteSerializer tests').tests(
         // bool
         value.val = true;
         $assertThrows(serialize);
+    }),
+
+    $test('deserialize: property of type object, different column types')
+    .check(function () {
+        var value = { val: { a: 1 } },
+            columnDefinitions = {},
+            deserialize = function() {
+                SQLiteSerializer.deserialize(value, columnDefinitions);
+            };
+
+        for (var c in ColumnType) {
+
+            columnDefinitions.val = ColumnType[c];
+
+            switch (ColumnType[c]) {
+                // Deserialization should work only for these column types
+                case ColumnType.Object:
+                case ColumnType.String:
+                case ColumnType.Text:
+                    var serializedValue = SQLiteSerializer.deserialize(value, columnDefinitions);
+                    $assert.areEqual(serializedValue, { val: JSON.stringify(value.val) });
+                    break;
+                // Deserializing as any other type should fail
+                default:
+                    $assertThrows(deserialize);
+                    break;
+            }
+        }
     }),
 
     $test('roundtripping: all types')
