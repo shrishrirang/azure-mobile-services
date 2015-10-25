@@ -1179,7 +1179,7 @@ $testGroup('MobileServiceTables.js',
     .description('Verify table.refresh does not hit server with nonstring invalid ids')
     .checkAsync(function () {
         var client = new WindowsAzure.MobileServiceClient("http://www.test.com", "123456abcdefg"),
-            testIdData = testData.invalidIntIds.concat(testData.nonStringNonIntIds),
+            testIdData = testData.invalidIntIds.concat(testData.nonStringNonIntIds).
             testCases = [];
 
         client = client.withFilter(function (req, next, callback) {

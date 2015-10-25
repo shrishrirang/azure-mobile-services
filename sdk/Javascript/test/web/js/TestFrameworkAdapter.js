@@ -20,9 +20,9 @@ $testGroup = function (groupName /*, test1, test2, ... */) {
     return testGroup;
 };
 
-$run = function () {
+$run = function (excludeFunctionalTests) {
     for (var index = 0; index < $testGroups.length; index++) {
-        $testGroups[index].exec();
+        $testGroups[index].exec(excludeFunctionalTests);
     }
 };
 
@@ -138,8 +138,8 @@ Test.prototype.checkAsync = function (testFunc) {
     return this.check(testFunc);
 };
 
-Test.prototype.exec = function () {
-    if (this._shouldExclude()) {
+Test.prototype.exec = function (excludeFunctionalTests) {
+    if (this._shouldExclude(excludeFunctionalTests)) {
         return;
     }
 
@@ -164,8 +164,10 @@ Test.prototype.tag = function (tagText) {
     return this;
 };
 
-Test.prototype._shouldExclude = function () {
-    return this.isExcluded || this._hasTag("exclude-web");
+Test.prototype._shouldExclude = function (excludeFunctionalTests) {
+    return this.isExcluded ||
+           this._hasTag("exclude-web") ||
+           (this.isFunctional && excludeFunctionalTests);
 };
 
 Test.prototype._hasTag = function (tagText) {
@@ -178,8 +180,11 @@ Test.prototype._hasTag = function (tagText) {
     return false;
 };
 
-// These functions are not used in our browser tests - they are ignored
-Test.prototype.functional = function () { return this; };
+Test.prototype.functional = function () {
+    this.isFunctional = true;
+    return this; 
+};
+// This function is ignored in the browser tests.
 Test.prototype.description = function () { return this; };
 
 // ------------------------------------------------------------------------------
@@ -191,7 +196,10 @@ function TestGroup(groupName, testsArray) {
     }
 }
 
-TestGroup.prototype.functional = function () { return this; }; // Not used in browser - ignored
+TestGroup.prototype.functional = function() {
+    this.isFunctional = true;
+    return this;
+};
 
 TestGroup.prototype.beforeEachAsync = function (action) {
     this._beforeEachAction = action;
@@ -208,7 +216,11 @@ TestGroup.prototype.tests = function (/* test1, test2, ... */) {
     return this;
 };
 
-TestGroup.prototype.exec = function() {
+TestGroup.prototype.exec = function (excludeFunctionalTests) {
+
+    if (this.isFunctional && excludeFunctionalTests) {
+        return;
+    }
 
     var testEnvironment = {};
 
@@ -228,7 +240,7 @@ TestGroup.prototype.exec = function() {
 
     QUnit.module(this.groupName, testEnvironment);
     for (var i = 0; i < this.testsArray.length; i++) {
-        this.testsArray[i].exec();
+        this.testsArray[i].exec(excludeFunctionalTests);
     }
 };
 
