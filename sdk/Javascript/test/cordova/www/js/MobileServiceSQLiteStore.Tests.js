@@ -682,6 +682,35 @@ $testGroup('SQLiteStore tests')
         });
     }),
 
+    $test('lookup: verify deserialization error is handled properly')
+    .checkAsync(function() {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                prop: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+            }
+        }).then(function() {
+            return store.upsert(testTableName, { id: '1', prop: 1.5 });
+        }).then(function() {
+            // Change table definition to introduce deserialization error;
+            return store.defineTable({
+                name: testTableName,
+                columnDefinitions: {
+                    id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                    prop: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Date
+                }
+            });
+        }).then(function() {
+            return store.lookup(testTableName, '1');
+        }).then(function(result) {
+            $assert.fail('lookup should have failed');
+        }, function(error) {
+        });
+    }),
+
     $test('Serialization: roundtripping verification')
     .checkAsync(function () {
         var store = createStore(),
@@ -1196,6 +1225,24 @@ $testGroup('SQLiteStore tests')
             return store.upsert();
         }).then(function () {
             $assert.fail('failure expected');
+        }, function (error) {
+        });
+    }),
+
+    $test('upsert: verify serialization error is handled properly')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                prop: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Integer
+            }
+        }).then(function () {
+            return store.upsert(testTableName, {id: '1', prop: 1.5});
+        }).then(function (result) {
+            $assert.fail('test should have failed');
         }, function (error) {
         });
     }),
@@ -2005,6 +2052,35 @@ $testGroup('SQLiteStore tests')
             $assert.areEqual(result, []);
         }, function (error) {
             $assert.fail(error);
+        });
+    }),
+
+    $test('read: verify deserialization error is handled properly')
+    .checkAsync(function () {
+        var store = createStore();
+
+        return store.defineTable({
+            name: testTableName,
+            columnDefinitions: {
+                id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.String,
+                prop: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+            }
+        }).then(function () {
+            return store.upsert(testTableName, {id: '1', prop: 1.5});
+        }).then(function () {
+            // Change table definition to introduce deserialization error;
+            return store.defineTable({
+                name: testTableName,
+                columnDefinitions: {
+                    id: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Date,
+                    prop: WindowsAzure.MobileServiceSQLiteStore.ColumnType.Real
+                }
+            });
+        }).then(function () {
+            return store.read(new Query(testTableName));
+        }).then(function (result) {
+            $assert.fail('test should have failed');
+        }, function (error) {
         });
     })
 );

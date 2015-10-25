@@ -282,7 +282,7 @@ $testGroup('SQLiteSerializer tests').tests(
                 case ColumnType.Boolean:
                 case ColumnType.Bool:
                     serializedValue = SQLiteSerializer.serialize(value, columnDefinitions);
-                    $assert.areEqual(serializedValue, { val: true });
+                    $assert.areEqual(serializedValue, { val: 1 });
                     break;
                     // Serializing as any other type should fail
                 default:
@@ -319,7 +319,7 @@ $testGroup('SQLiteSerializer tests').tests(
                 case ColumnType.Boolean:
                 case ColumnType.Bool:
                     serializedValue = SQLiteSerializer.serialize(value, columnDefinitions);
-                    $assert.areEqual(serializedValue, { val: false });
+                    $assert.areEqual(serializedValue, { val: 0 });
                     break;
                 // Serializing as any other type should fail
                 default:
@@ -461,8 +461,8 @@ $testGroup('SQLiteSerializer tests').tests(
             "text": "sometext",
             "integer": 5,
             "int": 6,
-            "boolean": false,
-            "bool": true,
+            "boolean": 0,
+            "bool": 1,
             "real": 1.5,
             "float": 2.2,
             "date": new Date(2001, 1, 1)

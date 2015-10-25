@@ -57,7 +57,7 @@ exports.serialize = function (value, columnDefinitions) {
     /// <returns>Serialized value</returns>
 
     if (_.isNull(value)) {
-        return value;
+        return null;
     }
 
     Validate.notNull(columnDefinitions, 'columnDefinitions');
@@ -85,7 +85,7 @@ exports.deserialize = function (value, columnDefinitions) {
     /// <returns>Deserialized value</returns>
 
     if (_.isNull(value)) {
-        return value;
+        return null;
     }
 
     Validate.notNull(columnDefinitions, 'columnDefinitions');
@@ -136,7 +136,7 @@ function serializeMember(value, columnType) {
             // Be strict about the type while serializing.
             // Allow only bool values
             Validate.isBool(value);
-            serializedValue = value;
+            serializedValue = convertToInteger(value);
             break;
         case ColumnType.Integer:
         case ColumnType.Int:
