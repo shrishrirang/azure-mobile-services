@@ -463,6 +463,58 @@ var MobileServiceSQLiteStore = function (dbName) {
             callback(null, result);
         });
     });
+
+    function chainOperation(task, method, thisArg, args) {
+        return task.then(function () {
+            return method.apply(thisArg, args);
+        });
+    }
+
+    this.performBatch = Platform.async(function (batch, callback) {
+
+        var self = this;
+        this._db.transaction(function (transaction) {
+
+            var currentTask = Platform.async(function (callback2) {
+                callback2();
+            })();
+
+            for (var i in batch) {
+                switch (batch[i].operation) {
+                    case 'defineTable':
+                        currentTask = chainOperation(currentTask, self.defineTable, self, batch[i].args);
+                        break;
+                    case 'upsert':
+                        currentTask = chainOperation(currentTask, self.upsert, self, batch[i].args);
+                        break;
+                    case 'del':
+                        currentTask = chainOperation(currentTask, self.del, self, batch[i].args);
+                        break;
+                    case 'lookup':
+                        currentTask = chainOperation(currentTask, self.lookup, self, batch[i].args);
+                        break;
+                    case 'read':
+                        currentTask = chainOperation(currentTask, self.read, self, batch[i].args);
+                        break;
+                    default:
+                        throw "not supported";
+                }
+            }
+
+            currentTask.then(function (result) {
+                callback(null, result);
+            }, function (error) {
+                callback(error);
+            });
+
+        }, function (error) {
+            var x = 1;
+            x = x;
+        }, function (res) {
+            var x = 1;
+            x = x;
+        });
+    });
 };
 
 function getStatementParameters(statement) {
